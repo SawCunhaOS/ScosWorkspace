@@ -1,0 +1,5 @@
+# Repositórios git independentes agrupados neste workspace — não são submodules,
+# nunca devem virar gitlink por um `git add -A`/`git add .` acidental na raiz.
+/sawcunha-open-system-bom/
+/SawCunhaOS-Foundation/
+/SawCunhaOS-Flow/
