@@ -89,7 +89,7 @@ development_status:
   3-13-suportar-header-idempotency-key-como-fonte-de-chave: review
   3-14-migrar-configuração-para-configurationproperties: review
   3-15-corrigir-ttl-e-equals-hashcode: review
-  3-16-adicionar-allowlist-de-tipos-no-polymorphicredisserializer: ready-for-dev
+  3-16-adicionar-allowlist-de-tipos-no-polymorphicredisserializer: review
   3-17-substituir-construtores-telescópicos-por-builder-e-documenta: ready-for-dev
   3-18-qualidade-de-teste-do-jdempotent-redis: done
   3-19-topologia-redis-parametrizada-concorrencia-e-throughput: done
