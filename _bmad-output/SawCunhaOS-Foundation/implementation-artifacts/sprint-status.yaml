@@ -1,0 +1,182 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+# WORKSPACE (desde 2026-09-09 — ver planning-artifacts/sprint-change-proposal-2026-09-11.md):
+# - Estes artefatos moram só no repo ScosWorkspace (SCOS/_bmad-output/SawCunhaOS-Foundation/);
+#   os repos de produto não guardam artefatos BMAD.
+# - Caminhos de código citados nas stories (web/src/..., pom.xml, mvn -pl <módulo>) são
+#   relativos a SCOS/SawCunhaOS-Foundation/; comandos mvn rodam de dentro desse diretório.
+# - Links ](../../<módulo>/...) de stories anteriores a 2026-09-09 usam o layout antigo e
+#   não resolvem no clique; leia como SawCunhaOS-Foundation/<módulo>/...
+generated: 08-22-2026 00:00
+last_updated: 09-11-2026
+project: SawCunhaOS-Foundation
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/SawCunhaOS-Foundation/implementation-artifacts
+development_status:
+  epic-1: done
+  1-1-congelar-o-inventário-classe-módulo: done
+  1-2-remover-dependências-mortas-e-obsoletas: done
+  1-3-migrar-serialização-json-de-gson-para-jackson: done
+  1-4-promover-o-perfil-analyze-checkstyle-archunit-para-pluginman: done
+  1-5-criar-módulos-api-e-mover-as-anotações-de-contrato: done
+  1-6-criar-o-módulo-archtest-para-regras-cross-módulo: done
+  1-7-extrair-o-módulo-core: done
+  1-8-extrair-o-módulo-spring: done
+  1-9-extrair-o-módulo-validation: done
+  1-10-extrair-o-módulo-cache: done
+  1-11-extrair-o-módulo-jpa: done
+  1-12-extrair-o-módulo-web: done
+  1-13-extrair-o-módulo-feign: done
+  1-14-impor-regras-archunit-cross-módulo-e-remover-utils-do-reacto: done
+  1-15-emitir-log-de-inicialização-por-módulo-de-implementação: done
+  epic-1-retrospective: optional
+
+  epic-2: done
+  2-1-corrigir-o-handler-de-acesso-negado-403: done
+  2-2-corrigir-o-handler-de-validação-para-parâmetro-simples-400: done
+  2-3-retornar-501-para-funcionalidade-não-implementada: done
+  2-4-padronizar-log-por-faixa-de-status-http: done
+  2-5-corrigir-a-resolução-de-título-de-erro-para-jackson-3: done
+  2-6-corrigir-resolvetitle-para-não-usar-try-catch-como-controle: done
+  2-7-unificar-o-formato-de-erro-em-handleexceptioninternal-inclui: done
+  2-8-mover-o-contrato-de-domínio-do-exception-para-o-core: done
+  2-9-mover-a-tradução-http-do-exception-para-o-web-e-registrar-vi: done
+  2-10-consolidar-a-constante-mdc_request_id-no-core: done
+  epic-2-retrospective: done
+
+  epic-3: in-progress
+  3-1-corrigir-a-inicialização-do-redisconnectionfactory: review
+  3-2-migrar-hashing-de-md5-para-sha-256: review
+  3-3-resolver-campos-anotados-em-toda-a-hierarquia-de-classes: review
+  3-4-registrar-idempotentaspect-sem-duplicidade-e-sem-threadlocal: review
+  3-5-tornar-a-aquisição-do-lock-atômica-tryacquire-lease: review
+  3-6-detectar-colisão-de-payload-sob-a-mesma-chave: review
+  3-7-garantir-fail-open-com-circuit-breaker-quando-o-redis-está-i: review
+  3-8-tornar-a-política-de-falha-por-exceção-de-negócio-declarável: done
+  3-9-posicionar-o-aspecto-de-idempotência-fora-do-escopo-transaci: review
+  3-10-tornar-o-namespace-de-prefixo-de-chave-configurável: review
+  3-11-expor-métricas-de-idempotência: review
+  3-12-introduzir-idempotencykeyresolver-com-composição-de-chave-de: review
+  3-13-suportar-header-idempotency-key-como-fonte-de-chave: review
+  3-14-migrar-configuração-para-configurationproperties: review
+  3-15-corrigir-ttl-e-equals-hashcode: review
+  3-16-adicionar-allowlist-de-tipos-no-polymorphicredisserializer: ready-for-dev
+  3-17-substituir-construtores-telescópicos-por-builder-e-documenta: ready-for-dev
+  3-18-qualidade-de-teste-do-jdempotent-redis: done
+  3-19-topologia-redis-parametrizada-concorrencia-e-throughput: done
+  3-20-corrigir-heranca-do-jdempotentid-e-ampliar-cobertura-de-anotacoes: ready-for-dev
+  epic-3-retrospective: optional
+
+  epic-4: in-progress
+  4-1-diagnosticar-o-gate-mecânico-de-javadoc-via-checkstyle: ready-for-dev
+  4-2-documentar-o-módulo-core: ready-for-dev
+  4-3-documentar-o-módulo-audit-api: ready-for-dev
+  4-4-documentar-o-módulo-jdempotent-api: ready-for-dev
+  4-5-documentar-o-módulo-validation-api: ready-for-dev
+  4-6-documentar-o-módulo-archtest: ready-for-dev
+  4-7-documentar-o-módulo-spring: ready-for-dev
+  4-8-documentar-o-módulo-validation: ready-for-dev
+  4-9-documentar-o-módulo-cache: ready-for-dev
+  4-10-documentar-o-módulo-jpa: ready-for-dev
+  4-11-documentar-o-módulo-web: ready-for-dev
+  4-12-documentar-o-módulo-feign: ready-for-dev
+  4-13-documentar-o-módulo-jdempotent: ready-for-dev
+  4-14-documentar-o-módulo-audit: ready-for-dev
+  4-15-documentar-o-módulo-privacy: ready-for-dev
+  4-16-ativar-globalmente-o-gate-mecânico-de-checkstyle: ready-for-dev
+  epic-4-retrospective: optional
+action_items:
+  - id: "epic-2-retro-item-1-corrigir-handleexceptioninternal-para-us"
+    epic: 2
+    action: "Corrigir handleExceptionInternal para usar resolveTitle() no titulo e
+      localeService.getMessage() no detail (em vez de ex.getMessage() bruto), cobrindo
+      os casos nativos 404/405/406. web/ExceptionsHandler.java:207-238"
+    owner: "dev"
+    status: done
+    ref: "_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md"
+  - id: "epic-2-retro-item-2-repontar-scoshibernateauditlistener-getx"
+    epic: 2
+    action: "Repontar ScosHibernateAuditListener.getXRequestId() para Constant.REQUEST_ID_HEADER.getValue()
+      em vez do literal X-Request-ID. audit/.../ScosHibernateAuditListener.java:95"
+    owner: "dev"
+    status: done
+    ref: "_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md"
+  - id: "epic-2-retro-item-3-limpar-referencias-mortas-ao-modulo-exce"
+    epic: 2
+    action: "Limpar referencias mortas ao modulo exception removido (Story 2.9): secao
+      SCOS Foundation Exception do README.md, javadoc de ExceptionsHandlerHandleExceptionInternalTest.java:39,
+      javadoc de ValidationAnnotationCountListener.java:39-41, e os 2 steps de CI
+      em .github/workflows/build.yml que apontam para exception/target/"
+    owner: "dev"
+    status: done
+    ref: "_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md"
+  - id: "epic-2-retro-item-4-adicionar-teste-com-applicationcontextru"
+    epic: 2
+    action: "Adicionar teste com ApplicationContextRunner provando que ScosWebErrorHandlerAutoConfiguration
+      registra ExceptionsHandler via auto-configuracao real, incluindo o caso scos.web.error-handler.enabled=false"
+    owner: "dev"
+    status: done
+    ref: "_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md"
+  - id: "epic-2-retro-item-5-adicionar-cobertura-mockmvc-webtestclien"
+    epic: 2
+    action: "Adicionar cobertura MockMvc/WebTestClient real (dispatch HTTP + serializacao
+      Jackson 3) para os caminhos 403/400/501/500 do ExceptionsHandler, hoje so testados
+      via chamada direta de metodo com mocks; completar ExceptionsHandlerLogLevelTest
+      para MethodNotImplemented/Generic/handleExceptionInternal"
+    owner: "dev"
+    status: done
+    ref: "_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md"
+  - id: "epic-2-retro-item-6-revisar-se-spring-security-core-spring-b"
+    epic: 2
+    action: "Revisar se spring-security-core/spring-boot-starter-validation em web/pom.xml
+      devem virar optional ou dependencias mais leves (jakarta.validation-api direto),
+      reconciliando com o comentario only runtime dependencies allowed do proprio
+      arquivo"
+    owner: "dev"
+    status: in-progress
+    ref: "_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md"
+  - id: "epic-2-retro-item-7-consolidar-os-dois-handlers-de-acesso-ne"
+    epic: 2
+    action: "Consolidar os dois handlers de acesso negado (AccessDeniedException/AuthorizationDeniedException)
+      identicos exceto o log, a logica duplicada de ScosFieldError nos 3 handlers
+      de validacao, e rotear os handlers de status fixo por logByStatus"
+    owner: "dev"
+    status: done
+    ref: "_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md"
+  - id: "epic-2-retro-item-8-tornar-obrigatorio-como-ac-de-toda-story"
+    epic: 2
+    action: "Tornar obrigatorio, como AC de toda story de mover/remover modulo, um
+      grep pelo nome do modulo removido em README.md, .github/workflows/*.yml e comentarios
+      javadoc antes de fechar a story (repetiu do Epico 1 para o Epico 2)"
+    owner: "dev"
+    status: done
+    ref: "_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md"

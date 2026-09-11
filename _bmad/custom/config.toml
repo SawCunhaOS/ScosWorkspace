@@ -5,3 +5,19 @@
 #
 # [agents.bmad-agent-pm]
 # description = "Prefers short, bulleted PRDs over narrative drafts."
+
+# Projeto BMAD ativo no workspace SCOS: SawCunhaOS-Foundation.
+# Artefatos BMAD moram só no workspace, uma subpasta por projeto em _bmad-output/<projeto>/.
+# Trocar de projeto = editar este bloco + _bmad/{bmm,tea,core}/config.yaml.
+[core]
+output_folder = "{project-root}/_bmad-output/SawCunhaOS-Foundation"
+
+[modules.bmm]
+planning_artifacts = "{project-root}/_bmad-output/SawCunhaOS-Foundation/planning-artifacts"
+implementation_artifacts = "{project-root}/_bmad-output/SawCunhaOS-Foundation/implementation-artifacts"
+
+[modules.tea]
+test_artifacts = "{project-root}/_bmad-output/SawCunhaOS-Foundation/test-artifacts"
+test_design_output = "_bmad-output/SawCunhaOS-Foundation/test-artifacts/test-design"
+test_review_output = "_bmad-output/SawCunhaOS-Foundation/test-artifacts/test-reviews"
+trace_output = "_bmad-output/SawCunhaOS-Foundation/test-artifacts/traceability"

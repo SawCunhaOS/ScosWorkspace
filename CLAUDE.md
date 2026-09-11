@@ -28,11 +28,20 @@ Ordem de dependência de build: **bom → Foundation → Organization** (Organiz
 rode `mvn clean install` na Foundation antes de builds na Organization que precisem de uma mudança
 recente dela).
 
+**Artefatos BMAD — só no workspace.** A instalação (`_bmad/`, skills em `.claude/`) e os artefatos
+(`_bmad-output/`) moram só aqui; os três repos **não** guardam artefato BMAD (sem `_bmad*`, sem blocos
+gerenciados pelo BMAD). Uma subpasta por projeto em `_bmad-output/<projeto>/` (hoje só
+`SawCunhaOS-Foundation/`); o projeto ativo é definido pelos caminhos em `_bmad/{bmm,tea,core}/config.yaml`
+e `_bmad/custom/config.toml` — trocar de projeto é editar esses caminhos; reinstalar o BMAD regrava os
+`*.yaml` (responda com os caminhos por projeto). Caminhos de código citados nas stories são relativos à
+raiz do repo do projeto. Os artefatos BMAD antigos do Flow (Organization) estão só no histórico dele:
+`git -C SawCunhaOS-Flow show e56929b^:_bmad-output/<arquivo>`.
+
 Cada repo já tem sua própria documentação detalhada — **prefira consultá-la a re-derivar do código**:
 
 - `sawcunha-open-system-bom/README.md` — como consumir o BOM (parent vs. import), branching/release, enforcer, profile `analyze`.
 - `SawCunhaOS-Foundation/README.md` — um módulo por seção, exemplos de uso de cada lib.
-- `SawCunhaOS-Foundation/AGENTS.md` (fonte: `bmad-project-context`) — políticas do repo (nunca commitar/dar push sem autorização explícita), onde ficam PRD/arquitetura/skills, convenção de commit por scope, pegadinha real de auto-configuração via `AutoConfiguration.imports` (não `@ComponentScan`).
+- `SawCunhaOS-Foundation/AGENTS.md` — políticas do repo (nunca commitar/dar push sem autorização explícita), onde ficam PRD/arquitetura/skills, convenção de commit por scope, pegadinha real de auto-configuração via `AutoConfiguration.imports` (não `@ComponentScan`).
 - `SawCunhaOS-Foundation/etc/doc/commit-convention.md` — Conventional Commits com scope = módulo Maven.
 - `SawCunhaOS-Flow/README.md` — visão geral completa: estado do sprint (BMAD), arquitetura DDD em camadas com diagrama de dependência, padrões reais de código (specification+Bean, Use Case, Delegate), convenções de nomenclatura de banco/permissão/erro, como rodar (Docker Compose em `etc/infra/`).
 - Módulos com `AGENTS.md` próprio na Foundation: `audit/`, `privacy/`, `web/`, `archtest/`.
@@ -45,15 +54,17 @@ de dependência ENTRE os três repos.
 
 ## Índice estrutural (scos-map)
 
-Skill local em `.claude/skills/scos-map/` (não é a skill global `graphify`). Para perguntas sobre
+Duas skills locais (não são a skill global `graphify`): `scos-map` (`.claude/skills/scos-map/`) só
+consulta o mapa; `scos-map-build` (`.claude/skills/scos-map-build/`) gera e mantém. O gerador é
+`ferramentas/scos-map/scos-map.py` (testes em `ferramentas/scos-map/tests/`). Para perguntas sobre
 **organização de código** — onde mora o quê, dependências e versões, configs, docs, fronteiras entre
 módulos — e não sobre o conteúdo de um arquivo específico já conhecido, consulte o índice em vez de
 grep bruto ou de reler tudo.
 
 ```bash
-python3 .claude/skills/scos-map/scos-map.py status .                      # existe mapa? o que está obsoleto?
-python3 .claude/skills/scos-map/scos-map.py workspace .                   # (re)gera o mapa dos 3 repos
-python3 .claude/skills/scos-map/scos-map.py workspace . --only <projeto>  # reprocessa só um projeto
+python3 ferramentas/scos-map/scos-map.py status .                      # existe mapa? o que está obsoleto?
+python3 ferramentas/scos-map/scos-map.py workspace .                   # (re)gera o mapa dos 3 repos
+python3 ferramentas/scos-map/scos-map.py workspace . --only <projeto>  # reprocessa só um projeto
 ```
 
 Leitura: comece por `.scos-map/workspace.json` na raiz — lista os projetos e aponta o `index.json` de
@@ -64,7 +75,8 @@ de um projeto, leia **apenas** `<repo>/.scos-map/index.json` e abra só os fatos
 |---|---|
 | onde mora o quê, ponto de entrada, convenção de pacote | `facts/<mod>/layout.json` |
 | configs, chaves, perfis | `facts/<mod>/config.json` |
-| dependências, versões declaradas x resolvidas | `facts/<mod>/deps.json` |
+| dependências, versões declaradas x resolvidas | `facts/<mod>/deps.json` + `deps.tsv` |
+| versões que a BOM fixa (`dependencyManagement`) | `facts/<mod>/gerenciadas.tsv` |
 | documentação existente sobre X | `facts/<mod>/docs.json` |
 | fronteiras entre módulos, conflito de versão | `facts/_reactor.json` |
 | listar/filtrar arquivos, churn | `files.tsv` (grep/awk — não carregar inteiro) |
@@ -78,7 +90,8 @@ resumo de achados no fim.
 
 Respeite o campo `confianca`/`estado` de cada fato antes de afirmar algo ao usuário: `obsoleto`
 significa que o fonte mudou depois do fato ser gerado (regenere ou avise); `heuristica` é inferência
-por convenção de nome, confirme antes de afirmar. Detalhe completo: `.claude/skills/scos-map/SKILL.md`.
+por convenção de nome, confirme antes de afirmar. Detalhe completo: `.claude/skills/scos-map/SKILL.md`
+(consulta) e `.claude/skills/scos-map-build/SKILL.md` (geração).
 
 ## Comandos comuns
 
@@ -136,12 +149,12 @@ cache           → core + spring-boot-starter-cache/data-redis
 jpa             → core + validation + querydsl + liquibase (opcional)
 web             → core + cache + privacy               (o mais acoplado dos leaves)
 feign           → core
-utils           → core + privacy + jpa*                (component-scan; consumidor final)
 audit, jdempotent → módulos leaf correspondentes + suas *-api
+archtest        (só testes ArchUnit sobre o reator; sem código de produção)
 ```
 
-Ativação em app consumidora: `utils` sobe por `@ComponentScan(basePackages="br.com.sawcunhaos")`;
-`web`, `privacy`, `audit`, `jdempotent` por auto-configuração via
+O antigo `utils` saiu do reator na Story 1.14. Ativação em app consumidora: `web`, `privacy`,
+`audit`, `jdempotent` sobem por auto-configuração via
 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` — **um bean com
 só `@Component` nesses módulos nunca é criado numa app real** (bug real pego em code review, Story 1.15).
 

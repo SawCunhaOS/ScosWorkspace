@@ -34,7 +34,7 @@ graph TD
     subgraph WS["SCOS/  —  repo git próprio (SawCunhaOS/ScosWorkspace)"]
         CLAUDE[".claude/skills/<br/>60 skills — scos-map + 59 do BMAD"]
         BMADDIR["_bmad/<br/>instalação BMAD Method v6.11.0<br/>(core, bmm, tea, custom)"]
-        OUT["_bmad-output/<br/>artefatos gerados: planning, specs,<br/>implementation, test"]
+        OUT["_bmad-output/<br/>artefatos gerados, uma subpasta<br/>por projeto (hoje: SawCunhaOS-Foundation/)"]
         WSMAP[".scos-map/workspace.json<br/>índice agregado + conflitos entre repos"]
     end
 
@@ -60,7 +60,7 @@ graph TD
 |---|---|---|
 | `.claude/skills/` | sim | Skills do Claude Code: `scos-map` + 59 skills do BMAD Method |
 | `_bmad/` | sim | Instalação do BMAD Method v6.11.0 (módulos `core`, `bmm`, `tea`, `custom`) |
-| `_bmad-output/` | sim | Artefatos gerados pelo BMAD ao longo do trabalho: `planning-artifacts/`, `specs/`, `implementation-artifacts/`, `test-artifacts/` |
+| `_bmad-output/` | sim | Artefatos gerados pelo BMAD, uma subpasta por projeto (`<projeto>/planning-artifacts/`, `specs/`, `implementation-artifacts/`, `test-artifacts/`) — hoje só `SawCunhaOS-Foundation/`. Os repos de produto não guardam artefatos BMAD |
 | `.scos-map/` | sim | Índice estrutural agregado do workspace — ver seção dedicada abaixo |
 | `sawcunha-open-system-bom/` | **não** (repo próprio) | BOM de versões |
 | `SawCunhaOS-Foundation/` | **não** (repo próprio) | Biblioteca fundacional Java |
@@ -88,10 +88,13 @@ workspace).
   `bmm` (BMad Method), `tea` (Test Architect Enterprise) e `custom`. Config em
   `_bmad/config.toml` / `_bmad/config.user.toml`; manifesto de instalação em
   `_bmad/_config/manifest.yaml`.
-- **Saída do BMAD** (`_bmad-output/`) — histórico real de specs, planejamento
-  e artefatos de implementação/teste já produzidos trabalhando nos repos
-  acima (ex.: `epic-2-retro-2026-08-29.md`, dezenas de
-  `<epic>-<story>-<slug>.md` de implementação).
+- **Saída do BMAD** (`_bmad-output/<projeto>/`) — histórico real de specs,
+  planejamento e artefatos de implementação/teste já produzidos trabalhando
+  nos repos acima, uma subpasta por projeto (ex.:
+  `SawCunhaOS-Foundation/implementation-artifacts/epic-2-retro-2026-08-29.md`,
+  dezenas de `<epic>-<story>-<slug>.md` de implementação). Só o workspace
+  guarda artefatos BMAD; os antigos do Flow estão no histórico git dele
+  (`git -C SawCunhaOS-Flow show e56929b^:_bmad-output/<arquivo>`).
 
 ## Foco: a skill `scos-map`
 
