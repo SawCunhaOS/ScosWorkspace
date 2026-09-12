@@ -36,7 +36,7 @@
 # - Links ](../../<módulo>/...) de stories anteriores a 2026-09-09 usam o layout antigo e
 #   não resolvem no clique; leia como SawCunhaOS-Foundation/<módulo>/...
 generated: 08-22-2026 00:00
-last_updated: 09-11-2026
+last_updated: 09-12-2026
 project: SawCunhaOS-Foundation
 project_key: NOKEY
 tracking_system: file-system
@@ -90,10 +90,10 @@ development_status:
   3-14-migrar-configuração-para-configurationproperties: review
   3-15-corrigir-ttl-e-equals-hashcode: review
   3-16-adicionar-allowlist-de-tipos-no-polymorphicredisserializer: review
-  3-17-substituir-construtores-telescópicos-por-builder-e-documenta: ready-for-dev
+  3-17-substituir-construtores-telescópicos-por-builder-e-documenta: review
   3-18-qualidade-de-teste-do-jdempotent-redis: done
   3-19-topologia-redis-parametrizada-concorrencia-e-throughput: done
-  3-20-corrigir-heranca-do-jdempotentid-e-ampliar-cobertura-de-anotacoes: ready-for-dev
+  3-20-corrigir-heranca-do-jdempotentid-e-ampliar-cobertura-de-anotacoes: review
   epic-3-retrospective: optional
 
   epic-4: in-progress
