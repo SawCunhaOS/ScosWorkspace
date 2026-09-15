@@ -101,7 +101,7 @@ development_status:
   4-2-documentar-o-módulo-core: review
   4-3-documentar-o-módulo-audit-api: review
   4-4-documentar-o-módulo-jdempotent-api: review
-  4-5-documentar-o-módulo-validation-api: ready-for-dev
+  4-5-documentar-o-módulo-validation-api: review
   4-6-documentar-o-módulo-archtest: ready-for-dev
   4-7-documentar-o-módulo-spring: ready-for-dev
   4-8-documentar-o-módulo-validation: ready-for-dev
