@@ -99,7 +99,7 @@ development_status:
   epic-4: in-progress
   4-1-diagnosticar-o-gate-mecânico-de-javadoc-via-checkstyle: review
   4-2-documentar-o-módulo-core: review
-  4-3-documentar-o-módulo-audit-api: ready-for-dev
+  4-3-documentar-o-módulo-audit-api: review
   4-4-documentar-o-módulo-jdempotent-api: ready-for-dev
   4-5-documentar-o-módulo-validation-api: ready-for-dev
   4-6-documentar-o-módulo-archtest: ready-for-dev

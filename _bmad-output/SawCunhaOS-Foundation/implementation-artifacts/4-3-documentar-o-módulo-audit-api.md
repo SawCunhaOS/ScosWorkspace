@@ -1,6 +1,6 @@
 # Story 4.3: Documentar o módulo `audit-api`
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -17,14 +17,14 @@ Para não integrá-lo sem a implementação correspondente.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Confirmar pré-requisito (AC: #1)
-  - [ ] **Confirmado por leitura direta**: o módulo `audit-api` **ainda não existe** neste repositório — nasce na Story 1.5, que move a anotação `@Auditable` (hoje em `utils/src/main/java/.../annotation/audit/`, confirmado via `find`) para um módulo `*-api` contendo apenas `@interface`/`enum`
-  - [ ] Não iniciar antes da Story 1.5 estar implementada
-- [ ] Task 2: README com frase de abertura obrigatória e diagrama (AC: #1)
-  - [ ] Criar `audit-api/README.md` iniciando literalmente com a frase "este artefato não executa nada; a implementação é `scos-foundation-audit`" (mesma frase exigida pela Story 1.15 do Epic 1 para todo módulo `-api`)
-  - [ ] Diagrama Mermaid mostrando: aplicação consumidora anota entidade/método com `@Auditable` (vindo de `audit-api`) → precisa do módulo `scos-foundation-audit` no classpath para a anotação ter efeito → listener Hibernate/aspecto processa a anotação
-- [ ] Task 3: Javadoc em toda anotação pública (AC: #2)
-  - [ ] `@Auditable` e demais anotações movidas para este módulo recebem Javadoc explicando o contrato (o que a anotação sinaliza), não a implementação (que não está neste módulo)
+- [x] Task 1: Confirmar pré-requisito (AC: #1)
+  - [x] **Confirmado por leitura direta (nesta execução)**: o módulo `audit-api` já existe (Story 1.5, `done`), com `Auditable.java`, `AuditAction.java`, `ArchitectureTest.java` e um `README.md` já criado — restava só o diagrama Mermaid e o Javadoc de tipo.
+  - [x] Story 1.5 confirmada `done` no `sprint-status.yaml` antes de iniciar.
+- [x] Task 2: README com frase de abertura obrigatória e diagrama (AC: #1)
+  - [x] `audit-api/README.md` já abria com a frase exigida (pré-existente) — não alterada.
+  - [x] Seção "Fluxo típico de uso" com diagrama Mermaid adicionada, no padrão de `core/README.md` (Story 4.2): app consumidora anota `@Auditable` → efeito só com `scos-foundation-audit` no classpath (listener Hibernate para C/U/D + `auditRead()`, invocação de leitura por método definida pela implementação).
+- [x] Task 3: Javadoc em toda anotação pública (AC: #2)
+  - [x] Javadoc de tipo adicionado em `Auditable` e em `AuditAction`, explicando o contrato sem descrever a implementação — ver Completion Notes para o ajuste feito após revisão.
 
 ## Dev Notes
 
@@ -46,10 +46,21 @@ Para não integrá-lo sem a implementação correspondente.
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Sonnet 5 (bmad-build, rota oneshot)
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Javadoc de tipo em `Auditable`/`AuditAction`; diagrama Mermaid no README. `mvn -pl audit-api -am test` verde (`ArchitectureTest`, 2 testes) antes e depois da revisão.
+- Revisão blind-hunter encontrou que a primeira versão do Javadoc de `Auditable` afirmava disparo automático de auditoria de leitura no nível de método — não existe (nenhum `@Aspect` no módulo `audit`; único uso de `@Auditable(action=READ)` do repositório nunca é chamado por teste). Reescrito para não afirmar automação nesse nível e para citar `auditRead()` (o caminho de leitura de fato automático, no nível de tipo). Diagrama ajustado no mesmo sentido; nome de classe concreta removido do diagrama (mantida a descrição genérica "listener Hibernate" já pedida pela story). Javadoc por constante de `AuditAction` removido (só reafirmava o nome, sem informação nova). Detalhe completo: `## Review Triage Log` da spec.
+- Achado real, mas fora de escopo, adiado para `deferred-work.md`: o caminho `@Auditable(action = AuditAction.READ)` não é processado por nada em tempo de execução no módulo `audit` — a classe `ScosAuditReadAspect`, citada em Javadoc pré-existente (`ActionType.SELECT`), não existe no código.
+- Spec completa: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-3-documentar-o-módulo-audit-api.md`.
+
 ### File List
+
+- `audit-api/src/main/java/br/com/sawcunhaos/foundation/audit/api/Auditable.java` (Javadoc de tipo)
+- `audit-api/src/main/java/br/com/sawcunhaos/foundation/audit/api/AuditAction.java` (Javadoc de tipo)
+- `audit-api/README.md` (seção "Fluxo típico de uso" com diagrama Mermaid)
+- `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/deferred-work.md` (achado adiado)
+- `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/sprint-status.yaml` (status da story)
