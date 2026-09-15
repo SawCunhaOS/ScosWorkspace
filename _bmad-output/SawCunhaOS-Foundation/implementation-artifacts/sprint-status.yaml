@@ -36,7 +36,7 @@
 # - Links ](../../<módulo>/...) de stories anteriores a 2026-09-09 usam o layout antigo e
 #   não resolvem no clique; leia como SawCunhaOS-Foundation/<módulo>/...
 generated: 08-22-2026 00:00
-last_updated: 09-14-2026
+last_updated: 09-15-2026
 project: SawCunhaOS-Foundation
 project_key: NOKEY
 tracking_system: file-system
@@ -98,7 +98,7 @@ development_status:
 
   epic-4: in-progress
   4-1-diagnosticar-o-gate-mecânico-de-javadoc-via-checkstyle: review
-  4-2-documentar-o-módulo-core: ready-for-dev
+  4-2-documentar-o-módulo-core: review
   4-3-documentar-o-módulo-audit-api: ready-for-dev
   4-4-documentar-o-módulo-jdempotent-api: ready-for-dev
   4-5-documentar-o-módulo-validation-api: ready-for-dev
