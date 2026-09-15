@@ -1,0 +1,42 @@
+---
+title: 'Documentar o módulo jdempotent-api'
+type: 'chore'
+created: '2026-09-15'
+status: 'done'
+route: 'oneshot'
+review_loop_iteration: 0
+context: ['{project-root}/_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/4-4-documentar-o-módulo-jdempotent-api.md', '{project-root}/SawCunhaOS-Foundation/audit-api/README.md', '{project-root}/SawCunhaOS-Foundation/jdempotent-api/README.md', '{project-root}/SawCunhaOS-Foundation/jdempotent-api/src/main/java/br/com/sawcunhaos/foundation/jdempotent/api/JdempotentProperty.java', '{project-root}/SawCunhaOS-Foundation/jdempotent-api/src/main/java/br/com/sawcunhaos/foundation/jdempotent/api/JdempotentIgnore.java']
+---
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** O módulo `jdempotent-api` (Epic 1, Story 1.5, `done`) já tem `README.md` com a frase de abertura exigida e uma tabela "Conteúdo", mas falta a seção "Fluxo típico de uso" com diagrama Mermaid exigida pela AC1. No código, o atributo `JdempotentProperty.value()` não tem nenhum Javadoc, e o Javadoc de tipo de `JdempotentIgnore` e `JdempotentProperty` está em inglês quebrado e não explica o contrato ("That annotation needs to..."), violando o padrão de "Javadoc de contrato" exigido pela AC2. As demais 3 anotações e os 3 enums do módulo (incluindo os já adicionados pelas Stories 3.12/3.13, confirmado por leitura direta do código atual) já têm Javadoc completo e não precisam de mudança.
+
+**Approach:** Adicionar ao `jdempotent-api/README.md` uma seção "Fluxo típico de uso" com diagrama Mermaid (`flowchart LR`), no mesmo padrão de `audit-api/README.md` (subgraph "contrato" vs. subgraph "implementação", aresta tracejada indicando que o efeito só existe com `scos-foundation-jdempotent` no classpath). Reescrever o Javadoc de tipo de `JdempotentIgnore` e `JdempotentProperty` para descrever o contrato real de cada anotação (o que sinalizam, sem descrever a implementação) e adicionar Javadoc ao atributo `JdempotentProperty.value()`. Não alterar a frase de abertura nem a tabela "Conteúdo" já existentes no README, não tocar nas demais anotações/enums (já documentados), e não alterar nenhum atributo, valor ou assinatura — só documentação.
+
+</frozen-after-approval>
+
+## Implementation Notes
+
+- Pré-requisito confirmado por leitura direta: `jdempotent-api` já existe (Story 1.5, `done`), com as 5 anotações `@Jdempotent*` + os 3 enums adicionados pelas Stories 3.12/3.13 (`JdempotentProperty`, `KeySource`, `IdempotentKeyMismatchPolicy`) já presentes no código, apesar de essas duas stories ainda estarem `review` no sprint-status — documentado o estado real do código, não o epics.md congelado.
+- Seção "Fluxo típico de uso" com diagrama Mermaid (`flowchart LR`) adicionada ao `README.md`, no padrão de `audit-api/README.md` (subgraph contrato vs. implementação, arestas tracejadas), com um nó por anotação, todas as 5 ligadas ao único nó de implementação (aspecto AOP).
+- Antes de escrever o Javadoc de `JdempotentProperty`/`JdempotentIgnore`, verificada a semântica real no módulo de implementação (`jdempotent/.../core/chain/JdempotentPropertyAnnotationChain.java` e `JdempotentIgnoreAnnotationChain.java`): `@JdempotentIgnore` e `@JdempotentProperty` com `value()` vazio (default) têm o mesmo efeito prático — o campo é excluído do material do hash porque a chave retornada é blank e o filtro do aspecto (`StringUtils.isBlank`) descarta a entrada, confirmado por teste dedicado (Story 3.20, `IdempotentAspectUTTest.java:472-497`). `@JdempotentProperty(value = "x")` usa `"x"` como a chave no `TreeMap` ordenado que compõe o hash, mantendo o valor real do campo. Javadoc de tipo e do atributo `value()` reescritos para deixar esse efeito explícito, em vez do texto anterior em inglês quebrado que não mencionava a exclusão no caso default.
+- Não alterada nenhuma outra anotação/enum do módulo (`JdempotentResource`, `JdempotentId`, `JdempotentRequestPayload`, `KeySource`, `IdempotentFailurePolicy`, `IdempotentKeyMismatchPolicy`) — Javadoc já completo e verificado consistente com o código real (`IdempotentAspect.java`, `IdempotencyKeyResolver.java`), sem inconsistência encontrada.
+- Frase de abertura e tabela "Conteúdo" do README preservadas sem alteração; nenhum atributo, valor ou assinatura de anotação alterado — só documentação.
+- `mvn -pl jdempotent-api -am test` verde (inclui `ArchitectureTest`: `onlyAnnotationsAndEnums` e `noRuntimeDependencyBeyondJdk`) antes e depois dos patches de revisão.
+- Revisão (blind-hunter) aplicada: 6 patches simples (diagrama e Javadoc, ver Review Triage Log), 1 achado real mas fora de escopo adiado para `deferred-work.md` (tabela "Conteúdo" não reflete a nuance de exclusão por valor default), e 1 achado falso (ver Review Triage Log). `mvn -pl jdempotent-api -am test` reexecutado após os patches, verde.
+
+## Review Triage Log
+
+Camada rodada: blind-hunter (8 achados, piso N=2 para ~2,95kB de conteúdo alterado). Iteração de review: 1.
+
+1. **[blind-hunter] O diagrama Mermaid novo liga `Resource`/`Id`/`Ignore`/`Property` ao nó do aspecto com aresta tracejada, mas não `Payload` — omissão acidental, já que `@JdempotentRequestPayload` é tão inerte sem o aspecto quanto as demais 4 anotações.** Verdict: `medium` (diagrama novo, central ao propósito da story, com assimetria não intencional). → `patch`: aresta `Payload -.só tem efeito com.-> Aspect` adicionada.
+2. **[blind-hunter] O rótulo do nó do aspecto no diagrama só menciona "campos do payload", omitindo o caminho de chave via header (`keySource=HEADER_THEN_FIELDS`, Story 3.13) já documentado na tabela "Conteúdo" do mesmo README.** Verdict: `medium` (diagrama novo incompleto frente a conteúdo já existente no mesmo arquivo). → `patch`: rótulo ajustado para citar os dois caminhos (padrão vs. `keySource`).
+3. **[blind-hunter] `JdempotentProperty.value()` ganhou um `@return` vazio nesta própria mudança, sem texto — Javadoc novo sem valor real, o oposto do que a story pede.** Verdict: `medium` (conteúdo novo, evitável). → `patch`: descrição adicionada ao `@return`.
+4. **[blind-hunter] Nenhum Javadoc documenta que `@JdempotentIgnore` tem precedência sobre `@JdempotentProperty` quando ambas anotam o mesmo campo (confirmado na ordem da chain: `Ignore` roda antes de `Property` e retorna antes de chamar o próximo elo).** Verdict: `medium` (ambiguidade real de API para quem combina as duas anotações). → `patch`: uma frase adicionada ao Javadoc de `JdempotentIgnore`. A premissa do achado de que `JdempotentId.java` já documentaria essa precedência foi checada e é falsa (seu Javadoc não menciona `JdempotentProperty`); o achado foi aplicado mesmo assim porque a lacuna em si é real e verificada independentemente.
+5. **[blind-hunter] A tabela "Conteúdo" do README não foi atualizada para citar que `value()` no default exclui o campo do hash — essa nuance só existe agora no Javadoc recém-reescrito.** Verdict: `medium`, mas fora de escopo: o Approach congelado desta spec veda explicitamente alterar a tabela "Conteúdo" existente. → `defer` (`deferred-work.md`).
+6. **[blind-hunter] O Javadoc novo de `JdempotentProperty` não avisava que dois campos com o mesmo `value()` no mesmo payload colidem silenciosamente na mesma chave do `TreeMap`.** Verdict: `medium` (risco real de uso indevido, exatamente o tipo de nuance que a nova prosa deveria cobrir). → `patch`: uma frase adicionada ao Javadoc de tipo de `JdempotentProperty`.
+7. **[blind-hunter] O rótulo de aresta "efeito só com", repetido 4x no diagrama novo, é gramaticalmente estranho (preposição solta traduzida ao pé da letra).** Verdict: `low`, mas correção simples. → `patch`: reformulado para "só tem efeito com" nas 5 arestas do novo diagrama.
+8. **[blind-hunter] `JdempotentIgnore.java`/`JdempotentProperty.java` deveriam citar "(Story 3.12)" no Javadoc, como fazem os arquivos irmãos (`JdempotentId.java` cita a Story 3.20, as classes de chain citam a Story 3.12), já que o comportamento agora documentado é o mesmo atribuído à Story 3.12 no `CHANGELOG.md`.** Verdict: `false`. Evidência: `git log --follow` de ambos os arquivos mostra que existem desde o commit inicial do projeto (`ac2ddab`/`639e877`), antes de qualquer story numerada — a Story 3.12 não os tocou (só arquivos do módulo de implementação `jdempotent`, não `jdempotent-api`). Citar "Story 3.12" nesses dois arquivos atribuiria a anotações pré-existentes uma origem incorreta.
