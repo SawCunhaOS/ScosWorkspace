@@ -412,3 +412,7 @@
 - source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-5-documentar-o-módulo-validation-api.md`
   summary: `ZipCode.java` mantém uma ordem de meta-anotações (`@Target`/`@Retention`/`@Documented`/`@Constraint`) e espaçamento (`@Target( { ElementType.FIELD, ElementType.PARAMETER })`) diferentes das outras 3 anotações do módulo (`@Documented`/`@Constraint`/`@Target`/`@Retention`, sem espaço extra).
   evidence: Achado pelo Blind Hunter durante a revisão desta story; confirmado por leitura direta dos 4 arquivos. Pré-existente, não causado por esta story (que só adicionou Javadoc aos atributos); fora de escopo porque o Approach desta spec restringe a mudança a documentação, não a estilo/formatação de código já existente.
+
+- source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-6-documentar-o-módulo-archtest.md`
+  summary: A nova seção "Gate de Javadoc" do `archtest/README.md` só cobre o Checkstyle; o perfil `analyze` da raiz também liga JaCoCo (mínimo de cobertura 0.80), SpotBugs e OWASP dependency-check, e não fica documentado se/como essas outras checagens tratam um módulo sem `src/main/java`.
+  evidence: Achado pelo Blind Hunter durante a revisão desta story. Fora de escopo: a AC2 desta story (e o Approach congelado da spec) cobre só o gate de Javadoc; verificar o comportamento de JaCoCo/SpotBugs/OWASP para um módulo sem código de produção exigiria investigação própria fora do que foi pedido.
