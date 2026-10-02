@@ -662,6 +662,72 @@ DEPS_LIB = (
     "origem\ttipo\tga\tversao\tscope\tdivergente\n"
     "effective-pom\tdireta\tio.jsonwebtoken:jjwt-impl\t0.12.6\tcompile\t\n")
 TRANSITIVAS = "ga\tversao\tscope\norg.jspecify:jspecify\t1.0.1\tcompile\n"
+BYTECODE_APP = {
+    "fato": "bytecode", "modulo": "app", "confianca": "alta", "estado": "disponivel",
+    "base": "jdeps sintetico", "frescor": {"estado": "fresco", "compilado_em": GERADO_FIXO},
+    "arestas_arquivo": "facts/app/bytecode_edges.tsv", "arestas_total": 6,
+    "motivo_vazio": "nenhuma classe compilada em target/classes",
+    "diagnostico": {"linhas_saida": 0, "casaram_regex": 0},
+    "transitivas_resolvidas": True,
+    "deps_usadas_ausentes_do_pom": [{"artefato": "gson", "referencias": 4}],
+    "deps_usadas_via_transitiva": [{"artefato": "jackson-annotations", "referencias": 379},
+                                   {"artefato": "slf4j-api", "referencias": 190}],
+    "deps_declaradas_sem_uso": [{"artefato": "logback-classic", "scope": "compile",
+                                 "nota": "atua em runtime", "provavel_falso_positivo": True}]}
+BYTECODE_LIB = {"fato": "bytecode", "modulo": "lib/core", "estado": "nao_aplicavel"}
+BYTECODE_EDGES_APP = (
+    "de\tpara\ttipo\torigem\n"
+    "br.com.scos.app.A\tbr.com.scos.app.B\tinterno\tclasses\n"
+    "br.com.scos.app.A\tbr.com.scos.lib.Core\texterno\tclasses\n"
+    "br.com.scos.app.B\tbr.com.scos.lib.Core\texterno\tclasses\n"
+    "br.com.scos.app.web.C\tbr.com.scos.app.A\tinterno\tclasses\n"
+    "br.com.scos.app.web.C\tjava.util.List\texterno\tclasses\n"
+    "br.com.scos.lib.Core\tjava.util.List\texterno\tclasses\n")
+CALLGRAPH_APP = {
+    "fato": "callgraph", "modulo": "app", "confianca": "parcial", "estado": "disponivel",
+    "base": "java-callgraph sintetico",
+    "aviso": "grafo estatico: proxies, reflexao e implementacoes geradas em runtime "
+             "NAO aparecem. Veja lacunas_conhecidas.",
+    "arestas_arquivo": "facts/app/callgraph_edges.tsv", "arestas_total": 6,
+    "arestas_ambiguas": 1,
+    "lacunas_conhecidas": [{"tipo": "proxy_spring", "path": "app/src/main/java/FooBean.java",
+                            "anotacao": "Transactional",
+                            "motivo": "@Transactional gera proxy em runtime"}],
+    "entrypoints": [{"path": "app/src/main/java/web/FooController.java",
+                     "anotacao": "RestController", "nota": "endpoint HTTP"}],
+    "metodos_sem_chamador": [
+        {"metodo": "br.com.scos.app.web.FooController#list",
+         "aviso": "ponto de entrada - nao e codigo morto"},
+        {"metodo": "br.com.scos.app.Util#orfao",
+         "aviso": "sem chamador conhecido; confira as lacunas antes de concluir "
+                  "que e codigo morto"}]}
+CALLGRAPH_EDGES_APP = (
+    "de\tpara\tinvoke\tcerteza\n"
+    "br.com.scos.app.web.FooController#list\tbr.com.scos.app.FooBean#all\tinvokevirtual\tresolvida\n"
+    "br.com.scos.app.web.FooController$1#run\tbr.com.scos.app.FooBean#all\tinvokevirtual\tresolvida\n"
+    "br.com.scos.app.FooBean#all\tbr.com.scos.app.Repo#find\tinvokeinterface\tambigua\n"
+    "br.com.scos.app.FooBean#all\tbr.com.scos.app.Util#fmt\tinvokestatic\tresolvida\n"
+    "br.com.scos.app.Repo#find\tbr.com.scos.app.Util#fmt\tinvokestatic\tresolvida\n"
+    "br.com.scos.app.Util#orfao\tbr.com.scos.app.Util#fmt\tinvokestatic\tresolvida\n")
+CALLGRAPH_LIB = {
+    "fato": "callgraph", "modulo": "lib/core", "estado": "indisponivel",
+    "motivo": "java-callgraph.jar nao encontrado",
+    "comando_sugerido": "baixe o jar e passe --callgraph-jar <caminho> ou coloque em "
+                        "~/.scos-map/java-callgraph.jar"}
+TESTS_APP = {
+    "fato": "tests", "modulo": "app", "confianca": "alta",
+    "completude": {"nivel": "parcial", "limitacoes": ["alvo e casamento de nome"]},
+    "raizes": ["src/test/java", "src/test"], "arquivos": 3, "classes": 3,
+    "frameworks": [{"nome": "JUnit 5", "origem": "declarada", "base": "pom.xml"},
+                   {"nome": "AssertJ", "origem": "inferida", "base": "import"}],
+    "por_tipo": {"unit": 3},
+    "cobertura": {"estado": "nao_analisado", "motivo": "nenhum relatorio JaCoCo lido"},
+    "corpo": "tests.tsv"}
+TESTS_TSV_APP = (
+    "path\ttipo\talvo_heuristico\tlinhas\tlast_modified\tcommits_90d\n"
+    "app/src/test/java/FooBeanTest.java\tunit\tFooBean\t40\t2026-01-01\t3\n"
+    "app/src/test/java/BarServiceTest.java\tunit\tBarService\t25\t2026-01-01\t1\n"
+    "app/src/test/java/HelperTest.java\tunit\t\t10\t2026-01-01\t0\n")
 MODULOS_MAPA = ["_raiz", "app", "app/core", "lib/core"]
 
 
@@ -680,9 +746,15 @@ def mapa_sintetico(base: Path, projeto="proj", head=None, schema="2.1",
     head_mapa = head or real[:12]
     layout = LAYOUT_APP if layout is None else layout
     fatos = {"app": {n: {"estado": estado, "arquivo": "facts/app/%s.json" % n}
-                     for n in ("layout", "config", "docs", "deps")},
+                     for n in ("layout", "config", "docs", "deps", "bytecode", "callgraph")},
              "lib/core": {"deps": {"estado": estado,
-                                   "arquivo": "facts/lib/core/deps.json"}}}
+                                   "arquivo": "facts/lib/core/deps.json"},
+                          "bytecode": {"estado": "nao_aplicavel",
+                                       "arquivo": "facts/lib/core/bytecode.json",
+                                       "motivo": "modulo agregador, sem classes proprias"},
+                          "callgraph": {"estado": "indisponivel",
+                                        "arquivo": "facts/lib/core/callgraph.json",
+                                        "motivo": "java-callgraph.jar nao encontrado"}}}
     mapa = repo / ".scos-map"
     escrever(mapa, {
         "index.json": json.dumps({
@@ -703,6 +775,14 @@ def mapa_sintetico(base: Path, projeto="proj", head=None, schema="2.1",
             "completude": {"nivel": "total"}, "corpo": "deps.tsv",
             "fecho_comum_arquivo": "../_transitivas_comuns.tsv"})
            for m in ("app", "lib/core")},
+        "facts/app/bytecode.json": json.dumps(BYTECODE_APP),
+        "facts/app/bytecode_edges.tsv": BYTECODE_EDGES_APP,
+        "facts/lib/core/bytecode.json": json.dumps(BYTECODE_LIB),
+        "facts/app/callgraph.json": json.dumps(CALLGRAPH_APP),
+        "facts/app/callgraph_edges.tsv": CALLGRAPH_EDGES_APP,
+        "facts/lib/core/callgraph.json": json.dumps(CALLGRAPH_LIB),
+        "facts/app/tests.json": json.dumps(TESTS_APP),
+        "facts/app/tests.tsv": TESTS_TSV_APP,
         "facts/app/layout.json": json.dumps(layout),
         "facts/app/config.json": json.dumps(CONFIG_APP),
         "facts/app/docs.json": json.dumps(DOCS_APP if docs is None else docs),

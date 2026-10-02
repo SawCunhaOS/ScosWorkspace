@@ -1,0 +1,14 @@
+# confianca=alta estado=fresco completude=parcial gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+# fontes: tests.json(alta,fresco)
+# fontes: tests.tsv(alta,fresco)
+# aviso: alvo e heuristica; existe teste chamado XTest, nao prova cobertura
+# limitacao: alvo e casamento de nome
+## resumo (5 de 5)	campo	valor
+raizes	src/test/java, src/test
+arquivos	3
+tipos	unit:3
+frameworks	JUnit 5 (declarada), AssertJ (inferida)
+cobertura	nao_analisado (nenhum relatorio JaCoCo lido)
+## arquivos (1 de 1)	path	tipo	alvo_heuristico	linhas	commits_90d	marca
+app/src/test/java/FooBeanTest.java	unit	FooBean	40	3	[heuristica]
+# 1 de 1 linhas casam | fontes: tests.json,tests.tsv

@@ -21,7 +21,9 @@ sys.path.insert(0, str(RAIZ))
 
 from scos_map_query import fatos  # noqa: E402
 from scos_map_query.cli import resolver  # noqa: E402
-from scos_map_query.comandos import layout  # noqa: E402
+from scos_map_query.comandos import arestas, bytecode as cmd_bytecode, layout  # noqa: E402
+from scos_map_query.comandos import arquivos_de_teste as cmd_tests  # noqa: E402
+from scos_map_query.comandos import callgraph as cmd_cg  # noqa: E402
 from scos_map_query.modelo import ErroConsulta  # noqa: E402
 from scos_map_query.render import tsv_clean  # noqa: E402
 
@@ -450,6 +452,223 @@ class TestConfigDocs(BaseMapa):
             self.assertEqual((rc, out, err), (0, m.AJUDA, ""))
 
 
+class TestArestas(BaseMapa):
+    def _rodar(self, *args, **kw):
+        return consultar(self.mapa(**kw), "arestas", "proj", "app", *args)
+
+    def test_golden_e_filtro_por_destino(self):
+        rc, out, err = self._rodar("--para", "br.com.scos.lib.Core")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual(out, (GOLDEN / "arestas.txt").read_text(encoding="utf-8"))
+        self.assertIn("## arestas (2 de 2)\tde\tpara\ttipo\torigem", out)
+
+    def test_de_e_pacote_e_sensivel_a_caixa(self):
+        _, out, _ = self._rodar("--de", "br.com.scos.app.web")
+        self.assertIn("## arestas (2 de 2)", out)
+        _, out, _ = self._rodar("--pacote", "br.com.scos.app.web")
+        self.assertIn("## arestas (2 de 2)", out)
+        _, out, _ = self._rodar("--pacote", "br.com.scos.lib")
+        self.assertIn("## arestas (3 de 3)", out)  # A->Core, B->Core, Core->List
+        _, out, _ = self._rodar("--de", "BR.com")
+        self.assertIn("## arestas (0 de 0)", out)
+
+    def test_truncado_sugere_filtros(self):
+        _, out, _ = consultar(self.mapa(), "arestas", "proj", "app", "--limit", "2")
+        self.assertIn("# truncado: use --de <classe> ou --para <classe> ou "
+                      "--pacote <pacote> ou --all", out)
+
+    def test_tsv_ausente_exit_3_e_nada_gerado(self):
+        sub = self.mapa()
+        (sub / ".scos-map/facts/app/bytecode_edges.tsv").unlink()
+        antes = sorted(p.name for p in (sub / ".scos-map").rglob("*"))
+        rc, out, err = consultar(sub, "arestas", "proj", "app")
+        self.assertEqual(rc, 3)
+        self.assertIn("--tier 2", out + err)
+        self.assertEqual(antes, sorted(p.name for p in (sub / ".scos-map").rglob("*")))
+
+    def test_tsv_vazio_traz_limitacao(self):
+        sub = self.mapa()
+        (sub / ".scos-map/facts/app/bytecode_edges.tsv").write_text(
+            "de\tpara\ttipo\torigem\n", encoding="utf-8")
+        _, out, _ = consultar(sub, "arestas", "proj", "app")
+        self.assertIn("## arestas (0 de 0)", out)
+        self.assertIn("# limitacao: motivo_vazio: nenhuma classe compilada", out)
+        self.assertIn("# limitacao: diagnostico: ", out)
+        self.assertIn("arestas vazias nao provam", out)
+
+    def test_bytecode_obsoleto(self):
+        sub = self.mapa()
+        f = sub / ".scos-map/facts/app/bytecode.json"
+        d = json.loads(f.read_text())
+        d["frescor"]["estado"] = "obsoleto"
+        f.write_text(json.dumps(d))
+        rc, out, _ = consultar(sub, "arestas", "proj", "app")
+        self.assertIn("estado=obsoleto", out.splitlines()[0])
+
+    def test_nao_aplicavel_e_ausente(self):
+        rc, out, _ = consultar(self.mapa(), "arestas", "proj", "lib/core")
+        self.assertEqual(rc, 0)
+        self.assertIn("# motivo: modulo agregador", out)
+        self.assertIn("## arestas (0 de 0)", out)
+        self.assertNotIn("limitacao: motivo_vazio", out)
+        rc, _, _ = consultar(self.base / "proj", "arestas", "proj", "app/core")
+        self.assertEqual(rc, 3)
+
+    def test_help_e_exemplo_real(self):
+        rc, out, err = consultar(self.mapa(), "arestas", "--help")
+        self.assertEqual((rc, err, out), (0, "", arestas.AJUDA))
+        self.assertLessEqual(len(arestas.AJUDA.encode()), 1500)
+        self.assertTrue(3 <= len(arestas.EXEMPLO.splitlines()) <= 5)
+        _, out, _ = self._rodar("--para", "br.com.scos.lib.Core")
+        self.assertIn(arestas.EXEMPLO, out)
+
+
+class TestTests(BaseMapa):
+    def _rodar(self, *args, **kw):
+        return consultar(self.mapa(**kw), "tests", "proj", "app", *args)
+
+    def test_golden_alvo(self):
+        rc, out, err = self._rodar("--alvo", "foobean")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual(out, (GOLDEN / "tests.txt").read_text(encoding="utf-8"))
+
+    def test_resumo_sem_ler_tsv_e_cobertura_com_estado(self):
+        sub = self.mapa()
+        (sub / ".scos-map/facts/app/tests.tsv").unlink()
+        rc, out, _ = consultar(sub, "tests", "proj", "app")
+        self.assertEqual(rc, 0)
+        self.assertIn("cobertura\tnao_analisado (nenhum relatorio JaCoCo lido)", out)
+        self.assertIn("frameworks\tJUnit 5 (declarada), AssertJ (inferida)", out)
+        self.assertIn("raizes\tsrc/test/java, src/test", out)
+        self.assertIn("tipos\tunit:3", out)
+        self.assertNotIn("## arquivos", out)
+        aviso = [l for l in out.splitlines() if l.startswith("# aviso: alvo e heuristica")]
+        self.assertEqual(len(aviso), 1)
+        self.assertLessEqual(len(aviso[0][len("# aviso: "):].encode()), 100)
+
+    def test_arquivos_todos_com_marca_inclusive_sem_alvo(self):
+        _, out, _ = self._rodar("--arquivos")
+        self.assertIn("## arquivos (3 de 3)", out)
+        linhas = [l for l in out.splitlines() if l.startswith("app/src/test/")]
+        self.assertEqual(len(linhas), 3)
+        self.assertTrue(all(l.endswith("\t[heuristica]") for l in linhas))
+        self.assertIn("HelperTest.java\tunit\t-\t10\t0\t[heuristica]", out)
+
+    def test_alvo_sem_casamento_nunca_diz_que_nao_existe(self):
+        _, out, _ = self._rodar("--alvo", "Nada")
+        self.assertIn("resultado\tnenhum arquivo de teste identificado nas raizes "
+                      "analisadas: src/test/java, src/test", out)
+        self.assertIn("## arquivos (0 de 0)", out)
+        self.assertNotIn("nao existe teste", out)
+
+    def test_zero_arquivos_no_fato(self):
+        sub = self.mapa()
+        f = sub / ".scos-map/facts/app/tests.json"
+        d = json.loads(f.read_text())
+        d["arquivos"] = 0
+        f.write_text(json.dumps(d))
+        _, out, _ = consultar(sub, "tests", "proj", "app")
+        self.assertIn("resultado\tnenhum arquivo de teste identificado", out)
+
+    def test_fato_ausente_exit_3(self):
+        sub = self.mapa()
+        (sub / ".scos-map/facts/app/tests.json").unlink()
+        rc, out, err = consultar(sub, "tests", "proj", "app")
+        self.assertEqual(rc, 3)
+        self.assertIn("tests.json", out + err)
+
+    def test_tabela_ausente_exit_3_citando_arquivo(self):
+        sub = self.mapa()
+        (sub / ".scos-map/facts/app/tests.tsv").unlink()
+        rc, out, err = consultar(sub, "tests", "proj", "app", "--arquivos")
+        self.assertEqual(rc, 3)
+        self.assertIn("tests.tsv", out + err)
+
+    def test_help_e_exemplo_real(self):
+        rc, out, err = consultar(self.mapa(), "tests", "--help")
+        self.assertEqual((rc, err, out), (0, "", cmd_tests.AJUDA))
+        self.assertLessEqual(len(cmd_tests.AJUDA.encode()), 1500)
+        self.assertIn("nunca 'X esta testada'", cmd_tests.AJUDA)
+        self.assertTrue(3 <= len(cmd_tests.EXEMPLO.splitlines()) <= 5)
+        _, out, _ = self._rodar("--alvo", "foobean")
+        self.assertIn(cmd_tests.EXEMPLO, out)
+
+
+class TestBytecode(BaseMapa):
+    BALDE = "deps_declaradas_sem_uso"
+
+    def _rodar(self, *args, **kw):
+        return consultar(self.mapa(**kw), "bytecode", "proj", "app", *args)
+
+    def _editar(self, fn, *args):
+        sub = self.mapa()
+        f = sub / ".scos-map/facts/app/bytecode.json"
+        d = json.loads(f.read_text())
+        fn(d)
+        f.write_text(json.dumps(d))
+        return consultar(sub, "bytecode", "proj", "app", *args)
+
+    def test_golden_balde(self):
+        rc, out, err = self._rodar("--balde", self.BALDE)
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual(out, (GOLDEN / "bytecode.txt").read_text(encoding="utf-8"))
+        self.assertIn("logback-classic\t-\tatua em runtime\t[provavel_falso_positivo]", out)
+
+    def test_resumo_contagens_e_leitura(self):
+        _, out, _ = self._rodar()
+        self.assertIn("deps_usadas_ausentes_do_pom\t1\trisco imediato", out)
+        self.assertIn("deps_usadas_via_transitiva\t2\thigiene", out)
+        self.assertIn("deps_declaradas_sem_uso\t1\thigiene", out)
+        self.assertIn("deps_ignoradas_na_analise\tnao calculado\tinformativo", out)
+        self.assertEqual(out.count("risco imediato"), 1)
+        self.assertIn("transitivas_resolvidas\tTrue", out)
+        self.assertNotIn("## itens", out)
+        aviso = [l for l in out.splitlines() if l.startswith("# aviso: so deps_usadas_ausentes")]
+        self.assertEqual(len(aviso), 1)
+        self.assertLessEqual(len(aviso[0][len("# aviso: "):].encode()), 100)
+        self.assertNotIn("# limitacao:", out)
+
+    def test_balde_via_transitiva(self):
+        _, out, _ = self._rodar("--balde", "deps_usadas_via_transitiva")
+        self.assertIn("## itens (2 de 2)\tartefato\treferencias\tnota\tmarca", out)
+        self.assertIn("jackson-annotations\t379", out)
+
+    def test_balde_ausente_nunca_zero(self):
+        _, out, _ = self._editar(lambda d: d.pop("deps_usadas_ausentes_do_pom"))
+        self.assertIn("deps_usadas_ausentes_do_pom\tnao calculado\trisco imediato", out)
+        _, out, _ = self._editar(lambda d: d.update(deps_usadas_ausentes_do_pom=[]))
+        self.assertIn("deps_usadas_ausentes_do_pom\t0\t", out)
+
+    def test_transitivas_nao_resolvidas_limitacao(self):
+        _, out, _ = self._editar(lambda d: d.update(transitivas_resolvidas=False))
+        self.assertIn("# limitacao: transitivas_resolvidas falso: a divisao entre "
+                      "deps_usadas_ausentes_do_pom e deps_usadas_via_transitiva", out)
+
+    def test_obsoleto_por_frescor(self):
+        _, out, _ = self._editar(lambda d: d["frescor"].update(estado="obsoleto"))
+        self.assertTrue(out.startswith("# confianca=alta estado=obsoleto"))
+
+    def test_balde_invalido_exit_2(self):
+        rc, out, err = self._rodar("--balde", "xyz")
+        self.assertEqual(rc, 2)
+        for b, _ in cmd_bytecode.BALDES:
+            self.assertIn(b, out + err)
+
+    def test_nao_aplicavel(self):
+        rc, out, _ = consultar(self.mapa(), "bytecode", "proj", "lib/core")
+        self.assertEqual(rc, 0)
+        self.assertIn("estado\tnao_aplicavel", out)
+        self.assertIn("# motivo:", out)
+
+    def test_help_e_exemplo_real(self):
+        rc, out, err = consultar(self.mapa(), "bytecode", "--help")
+        self.assertEqual((rc, err, out), (0, "", cmd_bytecode.AJUDA))
+        self.assertLessEqual(len(cmd_bytecode.AJUDA.encode()), 1500)
+        self.assertTrue(3 <= len(cmd_bytecode.EXEMPLO.splitlines()) <= 5)
+        _, out, _ = self._rodar()
+        self.assertIn(cmd_bytecode.EXEMPLO, out)
+
+
 class TestPacote(unittest.TestCase):
     PERMITIDOS = {"modelo", "filtros", "re", "typing", "dataclasses", "collections"}
     PROIBIDOS = {"open", "print", "input"}
@@ -770,3 +989,84 @@ class TestTabelasEReactor(BaseMapa):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCallgraph(BaseMapa):
+    DE = "br.com.scos.app.FooBean#"
+
+    def _rodar(self, *args, modulo="app"):
+        return consultar(self.mapa(), "callgraph", "proj", modulo, *args)
+
+    def _golden(self, nome, rc_out):
+        rc, out, err = rc_out
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual(out, (GOLDEN / nome).read_text(encoding="utf-8"))
+
+    def test_golden_indisponivel(self):
+        self._golden("callgraph.txt", self._rodar(modulo="lib/core"))
+
+    def test_golden_de(self):
+        self._golden("callgraph_arestas.txt", self._rodar("--de", self.DE))
+
+    def test_indisponivel_motivo_e_comando(self):
+        _, out, _ = self._rodar(modulo="lib/core")
+        self.assertIn("estado\tindisponivel", out)
+        self.assertIn("comando_sugerido\tbaixe o jar", out)
+        self.assertIn("# motivo: java-callgraph.jar nao encontrado", out)
+
+    def test_aviso_ate_100_bytes_em_ambos_estados(self):
+        for kw in ({"modulo": "lib/core"}, {}):
+            _, out, _ = self._rodar(**kw)
+            av = [l[len("# aviso: "):] for l in out.splitlines()
+                  if l.startswith("# aviso: ausencia de aresta nao prova ausencia de chamada")]
+            self.assertEqual(len(av), 1)
+            self.assertLessEqual(len(av[0].encode()), 100)
+
+    def test_resumo_sem_arestas_nem_comando(self):
+        _, out, _ = self._rodar()
+        for linha in ("arestas_total\t6", "arestas_ambiguas\t1", "entrypoints\t1",
+                      "lacunas\t1", "sem_chamador\t2"):
+            self.assertIn(linha, out)
+        self.assertNotIn("## arestas", out)
+        self.assertNotIn("comando_sugerido", out)
+        self.assertIn("# limitacao: grafo estatico: proxies", out)
+
+    def test_para(self):
+        _, out, _ = self._rodar("--para", "br.com.scos.app.Util#fmt")
+        self.assertIn("## arestas (3 de 3)", out)
+
+    def test_entrypoints_inclui_classe_interna(self):
+        _, out, _ = self._rodar("--entrypoints")
+        self.assertIn("## arestas (2 de 2)", out)
+        self.assertIn("FooController$1#run", out)
+
+    def test_lacunas(self):
+        _, out, _ = self._rodar("--lacunas")
+        self.assertIn("## lacunas (1 de 1)\ttipo\tpath\tanotacao\tmotivo", out)
+        self.assertIn("proxy_spring\tapp/src/main/java/FooBean.java\tTransactional\t", out)
+
+    def test_sem_chamador_limitacao_codigo_morto(self):
+        _, out, _ = self._rodar("--sem-chamador")
+        self.assertIn("# limitacao: nao e lista de codigo morto", out)
+        self.assertIn("Util#orfao\tsem chamador conhecido", out)
+
+    def test_fato_ausente_exit_3(self):
+        rc, _, _ = self._rodar(modulo="app/core")
+        self.assertEqual(rc, 3)
+
+    def test_tabela_ausente_exit_3_cita_arquivo(self):
+        sub = self.mapa()
+        (sub / ".scos-map/facts/app/callgraph_edges.tsv").unlink()
+        rc, out, _ = consultar(sub, "callgraph", "proj", "app", "--de", "x")
+        self.assertEqual(rc, 3)
+        self.assertIn("callgraph_edges.tsv", out)
+        rc, _, _ = consultar(sub, "callgraph", "proj", "app")  # resumo nao le a tabela
+        self.assertEqual(rc, 0)
+
+    def test_help(self):
+        rc, out, err = consultar(self.mapa(), "callgraph", "--help")
+        self.assertEqual((rc, err, out), (0, "", cmd_cg.AJUDA))
+        self.assertLessEqual(len(cmd_cg.AJUDA.encode()), 1500)
+        self.assertTrue(3 <= len(cmd_cg.EXEMPLO.splitlines()) <= 5)
+        _, out, _ = self._rodar("--de", self.DE)
+        self.assertIn(cmd_cg.EXEMPLO, out)

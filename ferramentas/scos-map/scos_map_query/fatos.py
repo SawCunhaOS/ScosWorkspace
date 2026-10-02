@@ -146,17 +146,17 @@ class Mapa:
             gerado=self.indice.get("gerado_em"),
             avisos=list(self.avisos), **kw))
 
-    def _tabela(self, rel_mapa, nome, estado=None, confianca=None):
+    def _tabela(self, rel_mapa, nome, estado=None, confianca=None, acao=ACAO_GERAR):
         """TSV com acesso por nome de coluna (AD-3); ausente = erro 3 citando o arquivo."""
         rel = "%s/.scos-map/%s" % (self.projeto, rel_mapa)
         try:
             linhas = (self.raiz / rel).read_text(encoding="utf-8").splitlines()
         except FileNotFoundError:
-            raise ErroConsulta(3, "%s ausente" % rel, ACAO_GERAR)
+            raise ErroConsulta(3, "%s ausente" % rel, acao)
         except (OSError, ValueError):
-            raise ErroConsulta(3, "%s ilegivel" % rel, ACAO_GERAR)
+            raise ErroConsulta(3, "%s ilegivel" % rel, acao)
         if not linhas:
-            raise ErroConsulta(3, "%s sem cabecalho" % rel, ACAO_GERAR)
+            raise ErroConsulta(3, "%s sem cabecalho" % rel, acao)
         cab = linhas[0].split("\t")
         self._meta(rel, nome, estado, confianca)
         return [dict(zip(cab, l.split("\t"))) for l in linhas[1:] if l]
@@ -184,6 +184,51 @@ class Mapa:
     def arquivos(self):
         rel = (self.indice.get("arquivos") or {}).get("tsv") or "files.tsv"
         return self._tabela(rel, "arquivos")
+
+    def _bytecode(self, modulo):
+        dados = self._fato(modulo, "bytecode")
+        meta = self.lidos[-1]
+        if meta.estado not in _SO_DISPONIBILIDADE \
+                and (dados.get("frescor") or {}).get("estado") == "obsoleto":
+            meta.estado = "obsoleto"
+        return dados
+
+    bytecode = _bytecode
+
+    def arestas(self, modulo):
+        """(fato bytecode, linhas de bytecode_edges.tsv); fato nao disponivel -> sem linhas."""
+        dados = self._bytecode(modulo)
+        meta = self.lidos[-1]
+        if meta.estado in _SO_DISPONIBILIDADE or dados.get("estado") != "disponivel":
+            return dados, []
+        rel = dados.get("arestas_arquivo")
+        acao = ("python3 ferramentas/scos-map/scos-map.py workspace . --only %s"
+                " --tier 2 (ou --tier 3)" % self.projeto)
+        if not rel:
+            raise ErroConsulta(3, "bytecode de %s sem arestas_arquivo" % modulo, acao)
+        return dados, self._tabela(rel, "arestas", meta.estado, meta.confianca, acao)
+
+    def callgraph(self, modulo):
+        return self._fato(modulo, "callgraph")
+
+    def callgraph_arestas(self, modulo, dados):
+        """Linhas de callgraph_edges.tsv; so chamar com fato disponivel."""
+        rel = dados.get("arestas_arquivo")
+        if not rel:
+            raise ErroConsulta(3, "callgraph de %s sem arestas_arquivo" % modulo,
+                               ACAO_GERAR)
+        meta = self.lidos[-1]
+        return self._tabela(rel, "callgraph_edges", meta.estado, meta.confianca)
+
+    def tests(self, modulo):
+        """Fato tests por convencao de caminho (nao consta em indice.modulos[m].fatos)."""
+        return self._abrir("tests", {"arquivo": "facts/%s/tests.json" % modulo,
+                                     "estado": "fresco"})
+
+    def tests_arquivos(self, modulo, dados):
+        meta = self.lidos[-1]
+        return self._tabela("facts/%s/%s" % (modulo, dados.get("corpo") or "tests.tsv"),
+                            "tests", meta.estado, meta.confianca)
 
     def modulos_com_deps(self):
         return [m for m, v in (self.indice.get("modulos") or {}).items()

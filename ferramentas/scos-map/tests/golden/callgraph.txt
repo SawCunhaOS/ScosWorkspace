@@ -1,0 +1,8 @@
+# confianca=- estado=indisponivel gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+# motivo: java-callgraph.jar nao encontrado
+# aviso: ausencia de aresta nao prova ausencia de chamada
+## resumo (3 de 3)	campo	valor
+estado	indisponivel
+motivo	java-callgraph.jar nao encontrado
+comando_sugerido	baixe o jar e passe --callgraph-jar <caminho> ou coloque em ~/.scos-map/java-callgraph.jar
+# 0 de 0 linhas casam | fontes: proj/.scos-map/facts/lib/core/callgraph.json

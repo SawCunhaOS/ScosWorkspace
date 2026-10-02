@@ -1,0 +1,12 @@
+# confianca=alta estado=fresco gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+# aviso: so deps_usadas_ausentes_do_pom e risco; demais baldes sao higiene
+## resumo (6 de 6)	campo	valor	leitura
+deps_usadas_ausentes_do_pom	1	risco imediato
+deps_usadas_via_transitiva	2	higiene
+deps_declaradas_sem_uso	1	higiene
+deps_ignoradas_na_analise	nao calculado	informativo
+frescor	fresco (compilado_em 2026-09-15T00:32:06Z)	-
+transitivas_resolvidas	True	-
+## itens (1 de 1)	artefato	referencias	nota	marca
+logback-classic	-	atua em runtime	[provavel_falso_positivo]
+# 1 de 1 linhas casam | fontes: proj/.scos-map/facts/app/bytecode.json

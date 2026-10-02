@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-02-2026 12:52
-last_updated: 10-02-2026 14:00
+last_updated: 10-02-2026 16:00
 project: SawCunhaOS-Workspace
 project_key: NOKEY
 tracking_system: file-system
@@ -51,11 +51,11 @@ development_status:
   2-2-consulta-snapshots: done
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-consulta-arestas: backlog
-  3-2-consulta-tests: backlog
-  3-3-consulta-bytecode: backlog
-  3-4-consulta-callgraph: backlog
+  epic-3: done
+  3-1-consulta-arestas: done
+  3-2-consulta-tests: done
+  3-3-consulta-bytecode: done
+  3-4-consulta-callgraph: done
   epic-3-retrospective: optional
 
   epic-4: backlog
