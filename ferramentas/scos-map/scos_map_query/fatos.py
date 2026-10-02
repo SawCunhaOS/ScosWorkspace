@@ -212,3 +212,62 @@ class Mapa:
                                         "transitivas_comuns", meta.estado,
                                         meta.confianca)
         return self._comuns
+
+
+class Workspace:
+    """Fatos do workspace.json (escopo workspace). Estado = pior caso dos heads."""
+
+    def __init__(self, raiz, ws, avisos, lidos):
+        self.raiz, self.ws, self.avisos, self.lidos = raiz, ws, list(avisos), lidos
+
+    def _estado_de(self, derivado):
+        sujos = {p.get("projeto") for p in self.ws.get("projetos") or []
+                 if (p.get("git") or {}).get("dirty")}
+        estados = [] if derivado else ["desconhecido"]  # sem evidencia != fresco
+        for repo, d in derivado.items():
+            head = (d or {}).get("head")
+            atual = _head_atual(self.raiz / repo)
+            if not head or not atual:
+                estados.append("desconhecido")
+            elif not atual.startswith(head):
+                estados.append("obsoleto")
+            else:
+                estados.append("desconhecido" if repo in sujos else "fresco")
+        for e in ("obsoleto", "desconhecido"):
+            if e in estados:
+                return e
+        return "fresco"
+
+    def _registrar(self, nome, chave, derivado):
+        """Le o fato `chave` do workspace.json e registra a Meta (estado = pior head)."""
+        fato = self.ws.get(chave)
+        if not isinstance(fato, dict):
+            raise ErroConsulta(3, "fato %s ausente em workspace.json" % chave,
+                               ACAO_GERAR)
+        der = {r: d for r, d in derivado(fato).items() if r}
+        comp = fato.get("completude") or {}
+        sujo = any((p.get("git") or {}).get("dirty") for p in self.ws.get("projetos") or []
+                   if p.get("projeto") in der)
+        self.lidos.append(Meta(
+            fato=nome, arquivo="workspace.json",
+            confianca=fato.get("confianca"), estado=self._estado_de(der),
+            completude=comp.get("nivel"), base=fato.get("base"),
+            heads={r: (d or {}).get("head") for r, d in der.items()},
+            commits_desde={r: _commits_desde(self.raiz / r, (d or {}).get("head"))
+                           for r, d in der.items()},
+            limitacoes=[str(x) for x in comp.get("limitacoes") or []]
+            + (["mapa gerado com alteracoes nao commitadas"] if sujo else []),
+            schema_versao=self.ws.get("schema_versao"),
+            gerado=self.ws.get("gerado_em"), avisos=list(self.avisos)))
+        return fato
+
+    def conflitos(self):
+        return self._registrar("conflitos", "conflitos_de_versao_cruzados",
+                               lambda f: f.get("derivado_de") or {})
+
+    def snapshots(self):
+        # ponytail: um head por produtor (o do ultimo item); heads distintos no mesmo
+        # produtor nao sao comparados. O gerador grava um head por repo.
+        return self._registrar("snapshots", "snapshots_locais", lambda f: {
+            i.get("produzido_por"): i.get("repo_local")
+            for i in f.get("itens") or []})

@@ -94,7 +94,7 @@ def _executar(argv, cwd, lidos, ctx):
     sub = parser.add_subparsers(dest="subcomando", required=True)
     for nome, m in reg.items():
         p = sub.add_parser(nome, add_help=False)
-        p.add_argument("projeto")
+        p.add_argument("projeto", nargs="?")
         p.add_argument("modulo", nargs="?")
         p.add_argument("--limit", type=_positivo)
         p.add_argument("--bytes", type=_positivo)
@@ -108,9 +108,16 @@ def _executar(argv, cwd, lidos, ctx):
     op = Opcoes(args.limit, args.bytes, args.todos, args.base)
     cmd = reg[args.subcomando]
     raiz = encontrar_raiz(cwd)
-    ctx.update(projeto=args.projeto)
     ws, avisos = fatos.abrir_workspace(raiz)
-    # ponytail: so escopos projeto/modulo; ESCOPO=workspace chega no Epic 2
+    if cmd.ESCOPO == "workspace":
+        if args.projeto or args.modulo:
+            raise ErroConsulta(2, "este subcomando nao recebe projeto nem modulo",
+                               ACAO_AJUDA)
+        return render.montar(cmd.consultar(args, fatos.Workspace(
+            raiz, ws, avisos, lidos)), lidos, op)
+    if not args.projeto:
+        raise ErroConsulta(2, "projeto obrigatorio", ACAO_AJUDA)
+    ctx.update(projeto=args.projeto)
     entrada, args.modulo = resolver(
         ws, "projeto" if getattr(args, "todos_modulos", False) else cmd.ESCOPO,
         args.projeto, args.modulo)

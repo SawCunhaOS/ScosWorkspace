@@ -146,6 +146,22 @@ class TestBenchmarkSM1(unittest.TestCase):
         self._registrar("Q6", out, "grep -n 'flow-\\|scos-' %s/organization/%s/pom.xml"
                         % (FLOW, DOMAIN), _tam(FLOW + "/.scos-map/facts/_reactor.json"), True)
 
+    def test_q7_conflitos(self):
+        itens = _json(".scos-map/workspace.json")["conflitos_de_versao_cruzados"]["itens"]
+        out = _cli("conflitos")
+        self.assertEqual(_dados(out, "conflitos"), [i["ga"] for i in itens])
+        self.assertEqual(_rodape_n(out), len(itens))
+        read = _tam(".scos-map/workspace.json")
+        self.assertLessEqual(len(out.encode()), 0.10 * read, "Q7 CLI/Read")
+
+    def test_q8_snapshots(self):
+        itens = _json(".scos-map/workspace.json")["snapshots_locais"]["itens"]
+        out = _cli("snapshots")
+        self.assertEqual(_dados(out, "snapshots"), sorted({i["produzido_por"] for i in itens}))
+        self.assertEqual(_rodape_n(out), len({i["produzido_por"] for i in itens}))
+        read = _tam(".scos-map/workspace.json")
+        self.assertLessEqual(len(out.encode()), 0.10 * read, "Q8 CLI/Read")
+
     def test_latencia_do_cli_real(self):
         t = time.perf_counter()
         _cli("layout", FLOW, USECASE)

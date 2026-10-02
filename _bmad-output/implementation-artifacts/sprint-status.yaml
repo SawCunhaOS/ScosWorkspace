@@ -46,9 +46,9 @@ development_status:
   1-8-guardas-de-qualidade-e-benchmark-sm-1-q1-q6: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-consulta-conflitos: backlog
-  2-2-consulta-snapshots: backlog
+  epic-2: done
+  2-1-consulta-conflitos: done
+  2-2-consulta-snapshots: done
   epic-2-retrospective: optional
 
   epic-3: backlog

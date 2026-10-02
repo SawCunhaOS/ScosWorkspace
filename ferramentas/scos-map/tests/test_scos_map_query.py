@@ -515,6 +515,134 @@ class TestPacote(unittest.TestCase):
 
 
 
+class TestConflitos(BaseMapa):
+    ITENS = [{"ga": "org.x:y", "versoes": {"1.0": ["proj/app", "proj/lib/core"],
+                                           "2.0": ["outro/_raiz (gerenciada)"]}}]
+
+    def ws(self, itens=None, sujo=False, derivado=None, completude="total", fato=True,
+           extra=None):
+        sub = self.mapa()
+        caminho = self.base / ".scos-map" / "workspace.json"
+        d = json.loads(caminho.read_text(encoding="utf-8"))
+        head = fatos._head_atual(self.base / "proj")[:12]
+        d["projetos"][0]["git"] = {"head": head, "dirty": sujo}
+        if fato:
+            d["conflitos_de_versao_cruzados"] = {
+                "confianca": "resolvida", "completude": {
+                    "nivel": completude, "limitacoes": ["arvore suja em proj"]},
+                "derivado_de": derivado or {"proj": {"head": head}, **(extra or {})},
+                "itens": self.ITENS if itens is None else itens}
+        caminho.write_text(json.dumps(d), encoding="utf-8")
+        return sub
+
+    def test_golden_uma_linha_por_ga(self):
+        rc, out, err = consultar(self.ws(), "conflitos")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual(out, (GOLDEN / "conflitos.txt").read_text(encoding="utf-8"))
+
+    def test_arvore_suja_pior_caso_entre_heads(self):
+        _, out, _ = consultar(self.ws(sujo=True, extra={"fantasma": {"head": "abc123"}},
+                                      completude="parcial"),
+                              "conflitos")
+        self.assertIn("# confianca=resolvida estado=desconhecido completude=parcial", out)
+        self.assertIn("# limitacao: arvore suja em proj", out)
+        self.assertIn("# limitacao: mapa gerado com alteracoes nao commitadas", out)
+
+    def test_head_diferente_e_obsoleto(self):
+        _, out, _ = consultar(self.ws(derivado={"proj": {"head": "deadbeef0000"}}),
+                              "conflitos")
+        self.assertIn("estado=obsoleto", out)
+
+    def test_pior_caso_obsoleto_vence_desconhecido_e_este_vence_fresco(self):
+        fantasma = {"fantasma": {"head": "abc123"}}  # repo inexistente: desconhecido
+        _, out, _ = consultar(self.ws(derivado={
+            "proj": {"head": "deadbeef0000"}, **fantasma}), "conflitos")
+        self.assertIn("estado=obsoleto", out)
+        _, out, _ = consultar(self.ws(extra=fantasma), "conflitos")
+        self.assertIn("estado=desconhecido", out)
+
+    def test_zero_conflitos_nao_e_vazio(self):
+        rc, out, _ = consultar(self.ws(itens=[]), "conflitos")
+        self.assertEqual(rc, 0)
+        self.assertTrue(out.splitlines()[-1].startswith(
+            "# 0 de 0 linhas casam | fontes: workspace.json"))
+
+    def test_projeto_e_erro_2(self):
+        self.assertEqual(consultar(self.ws(), "conflitos", "proj")[0], 2)
+
+    def test_fato_ausente_e_erro_3(self):
+        self.assertEqual(consultar(self.ws(fato=False), "conflitos")[0], 3)
+
+    def test_projeto_obrigatorio_nos_demais(self):
+        self.assertEqual(consultar(self.ws(), "reactor")[0], 2)
+
+
+class TestSnapshots(BaseMapa):
+    def ws(self, head=None, sujo=False, fato=True, itens=True):
+        sub = self.mapa()
+        caminho = self.base / ".scos-map" / "workspace.json"
+        d = json.loads(caminho.read_text(encoding="utf-8"))
+        atual = fatos._head_atual(self.base / "proj")[:12]
+        d["projetos"][0]["git"] = {"head": atual, "dirty": sujo}
+        rl = {"head": head or atual, "ultimo_commit": "2026-09-14"}
+        mk = lambda ga, est, **kw: {
+            "ga": ga, "versao": "1.0-SNAPSHOT", "consumido_por": ["outro"],
+            "produzido_por": "proj", "repo_local": rl, "estado": est,
+            **({"acao": "mvn clean install em proj"} if est != "jar_atual" else {}), **kw}
+        if fato:
+            d["snapshots_locais"] = {
+                "confianca": "media", "base": "mtime", "completude": {
+                    "nivel": "parcial", "limitacoes": ["mtime do jar nao e prova"]},
+                "itens": [mk("g:a", "jar_atual"), mk("g:b", "jar_desatualizado", atraso_dias=5),
+                          mk("g:c", "jar_ausente")] if itens else []}
+        caminho.write_text(json.dumps(d), encoding="utf-8")
+        return sub
+
+    def test_golden_agrupado_com_estados_mistos(self):
+        rc, out, err = consultar(self.ws(), "snapshots")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertEqual(out, (GOLDEN / "snapshots.txt").read_text(encoding="utf-8"))
+
+    def test_detalhe_uma_linha_por_coordenada(self):
+        _, out, _ = consultar(self.ws(), "snapshots", "--detalhe")
+        self.assertIn("## snapshots (3 de 3)\tga\tversao\testado\tacao\tatraso_dias", out)
+        self.assertIn("g:b\t1.0-SNAPSHOT\tjar_desatualizado\tmvn clean install em proj\t5", out)
+        self.assertIn("g:a\t1.0-SNAPSHOT\tjar_atual\t-\t-", out)
+
+    def test_head_divergente_e_obsoleto_mesmo_com_jar_atual(self):
+        _, out, _ = consultar(self.ws(head="deadbeef0000"), "snapshots")
+        self.assertIn("estado=obsoleto", out)
+        self.assertNotIn("estado=fresco", out)
+
+    def test_mapa_sujo_e_desconhecido(self):
+        _, out, _ = consultar(self.ws(sujo=True), "snapshots")
+        self.assertIn("estado=desconhecido", out)
+
+    def test_head_ilegivel_e_desconhecido(self):
+        sub = self.ws()
+        (self.base / "proj" / ".git" / "HEAD").write_text("", encoding="utf-8")
+        _, out, _ = consultar(sub, "snapshots")
+        self.assertIn("estado=desconhecido", out)
+
+    def test_mapa_sujo_traz_clausula_de_limitacao(self):
+        _, out, _ = consultar(self.ws(sujo=True), "snapshots")
+        self.assertIn("# limitacao: mapa gerado com alteracoes nao commitadas", out)
+
+    def test_zero_itens_nao_e_vazio_nem_fresco(self):
+        rc, out, _ = consultar(self.ws(itens=False), "snapshots")
+        self.assertEqual(rc, 0)
+        self.assertIn("estado=desconhecido", out)
+        self.assertTrue(out.splitlines()[-1].startswith("# 0 de 0 linhas casam"))
+
+    def test_limitacao_fr4(self):
+        _, out, _ = consultar(self.ws(), "snapshots")
+        self.assertIn("# limitacao: commit so de docs marca atraso", out)
+
+    def test_projeto_e_erro_2_e_fato_ausente_e_3(self):
+        self.assertEqual(consultar(self.ws(), "snapshots", "proj")[0], 2)
+        self.assertEqual(consultar(self.ws(fato=False), "snapshots")[0], 3)
+
+
 class TestTabelasEReactor(BaseMapa):
     def _ok(self, *args):
         rc, out, err = consultar(self.mapa(), *args)

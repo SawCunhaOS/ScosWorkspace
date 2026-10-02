@@ -1,0 +1,4 @@
+# confianca=resolvida estado=fresco completude=total gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+## conflitos (1 de 1)	ga	versoes
+org.x:y	1.0:proj | 2.0:outro (gerenciada)
+# 1 de 1 linhas casam | fontes: workspace.json

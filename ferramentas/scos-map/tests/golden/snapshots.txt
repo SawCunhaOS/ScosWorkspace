@@ -1,0 +1,7 @@
+# confianca=media estado=fresco completude=parcial gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+# limitacao: mtime do jar nao e prova
+# limitacao: mtime != conteudo: jar_atual nao prova que o jar contem o ultimo commit
+# limitacao: commit so de docs marca atraso; alteracao nao commitada e stash nao contam
+## snapshots (1 de 1)	produtor	jars	estados	max_atraso_dias	acao
+proj	3 jar(s)	jar_atual:1,jar_ausente:1,jar_desatualizado:1	5	mvn clean install em proj
+# 1 de 1 linhas casam | fontes: workspace.json
