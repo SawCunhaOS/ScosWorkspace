@@ -1,0 +1,10 @@
+# confianca=resolvida estado=fresco completude=total gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+# fontes: deps.json(resolvida,fresco)
+# fontes: deps.tsv(resolvida,fresco)
+# fontes: _transitivas_comuns.tsv(resolvida,fresco)
+## dependencias (2 de 2)	ga	versao	scope	origem	marca
+io.jsonwebtoken:jjwt-api	0.12.6	compile	effective-pom	
+com.x:y	1.0	runtime	transitiva	[transitiva]
+## transitivas (1 de 1)	ga	versao	scope	marca
+org.jspecify:jspecify	1.0.1	compile	[transitiva]
+# 3 de 3 linhas casam | fontes: deps.json,deps.tsv,_transitivas_comuns.tsv

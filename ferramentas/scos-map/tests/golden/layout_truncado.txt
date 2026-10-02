@@ -1,0 +1,56 @@
+# confianca=alta estado=fresco gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+## pacote_base (1 de 1)	pacote_base
+br.com.scos.app
+## areas (49 de 60)	caminho	papel	arquivos
+d00	p	0
+d01	p	1
+d02	p	2
+d03	p	3
+d04	p	4
+d05	p	5
+d06	p	6
+d07	p	7
+d08	p	8
+d09	p	9
+d10	p	10
+d11	p	11
+d12	p	12
+d13	p	13
+d14	p	14
+d15	p	15
+d16	p	16
+d17	p	17
+d18	p	18
+d19	p	19
+d20	p	20
+d21	p	21
+d22	p	22
+d23	p	23
+d24	p	24
+d25	p	25
+d26	p	26
+d27	p	27
+d28	p	28
+d29	p	29
+d30	p	30
+d31	p	31
+d32	p	32
+d33	p	33
+d34	p	34
+d35	p	35
+d36	p	36
+d37	p	37
+d38	p	38
+d39	p	39
+d40	p	40
+d41	p	41
+d42	p	42
+d43	p	43
+d44	p	44
+d45	p	45
+d46	p	46
+d47	p	47
+d48	p	48
+## entrypoints (0 de 2)	path	tipo	rota
+# truncado: use --limit 63 ou --all
+# 50 de 63 linhas casam | fontes: proj/.scos-map/facts/app/layout.json

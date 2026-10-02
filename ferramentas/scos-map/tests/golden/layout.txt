@@ -1,0 +1,10 @@
+# confianca=alta estado=fresco gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+## pacote_base (1 de 1)	pacote_base
+br.com.scos.app
+## areas (2 de 2)	caminho	papel	arquivos
+app/src/main/java/br/com/scos/config	config	8
+app/src/main/java/br/com/scos/util	util	1
+## entrypoints (2 de 2)	path	tipo	rota
+app/src/main/java/br/com/scos/Api.java	http	-
+app/src/main/java/br/com/scos/Api.java	rota	REQUEST /api
+# 5 de 5 linhas casam | fontes: proj/.scos-map/facts/app/layout.json

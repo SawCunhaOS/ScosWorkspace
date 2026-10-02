@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PRD Validation: Scripts de Consulta Rápida para scos-map</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --text: #1c1917;
+    --muted: #78716c;
+
+    --verdict-strong: #16a34a;
+    --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706;
+    --verdict-broken: #dc2626;
+
+    --sev-low: #64748b;
+    --sev-medium: #ca8a04;
+    --sev-high: #ea580c;
+    --sev-critical: #dc2626;
+
+    --grade-exc: #16a34a;
+    --grade-good: #65a30d;
+    --grade-fair: #d97706;
+    --grade-poor: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  header.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .grade {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: white;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .grade-excellent { background: var(--grade-exc); }
+  .grade-good { background: var(--grade-good); }
+  .grade-fair { background: var(--grade-fair); }
+  .grade-poor { background: var(--grade-poor); }
+
+  .synthesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    font-size: 15.5px;
+  }
+  .synthesis p { margin: 0 0 10px; }
+  .synthesis p:last-child { margin-bottom: 0; }
+
+  .dimension-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dim-card .dim-verdict { font-size: 14px; font-weight: 600; }
+
+  section.dimension, section.reviewer-section { margin-bottom: 14px; }
+  section.dimension details, section.reviewer-section details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  section summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section summary::-webkit-details-marker { display: none; }
+  section summary::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  section details[open] summary::before { transform: rotate(90deg); }
+  section summary h2 {
+    display: inline;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    flex: 1;
+  }
+  .verdict-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  .verdict-strong { background: var(--verdict-strong); }
+  .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); }
+  .verdict-broken { background: var(--verdict-broken); }
+
+  .dim-body { padding: 4px 20px 18px; }
+  .dim-judgment { color: var(--text); font-size: 14.5px; }
+  .dim-judgment p { margin: 0 0 10px; }
+
+  .findings-list { padding: 0 20px 4px; }
+  article.finding {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  article.finding:first-child { border-top: none; }
+  article.finding header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
+  .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
+  .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
+  .finding-fix strong { color: var(--muted); font-weight: 500; }
+
+  .reviewer-source {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  .mechanical {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mechanical ul { margin: 0; padding-left: 20px; }
+  .mechanical li { margin-bottom: 4px; color: var(--text); }
+
+  footer.report-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
+</style>
+<style>code{font-family:ui-monospace,Menlo,monospace;font-size:.92em;background:rgba(120,113,108,.12);padding:1px 4px;border-radius:3px}</style></head><body><div class="container">
+<header class="report-header"><div class="title"><h1>Scripts de Consulta Rápida para scos-map — Validation Report</h1><div class="subtitle">/home/sawcunha/Projetos/SCOS/_bmad-output/planning-artifacts/prds/prd-SawCunhaOS-Workspace-2026-09-14/prd.md</div></div><div class="grade grade-poor">Poor</div></header>
+<div class="synthesis"><p>A rubrica considera a PRD madura para virar stories: tese única, evidência medida e decisões registradas com o que se abriu mão. Cinco dimensões estão *strong* e duas *adequate*, com 11 achados (0 críticos, 1 alto). O alto é um conflito de critérios: o limite de 30 linhas das skills (FR-11) não cabe junto dos exemplos e formatos por subcomando exigidos por FR-1, FR-6 e FR-7.</p><p>O revisor adversarial, que verificou o código e os fatos reais, discorda do grau de prontidão e levanta 2 críticos: (1) FR-5 reutiliza <code>fact_state</code>, que exige varredura do repositório e git a cada consulta, e não cobre <code>snapshots_locais</code>, que não tem <code>derivado_de</code> e sairia sempre <code>fresco</code> — falso-fresco na UJ-2; (2) o proxy do benchmark é otimista (cabeçalho fixo, Q3 ignora as transitivas, respostas não equivalentes, <code>jq</code> nunca medido). Pela regra de nota, qualquer achado crítico dá Poor, mas a nota subiu em substância: os 3 críticos da rodada 1 foram resolvidos ou reduzidos, e os 2 novos são mais estreitos e verificáveis. Os pontos em comum (conflito 30 linhas × exemplos, envelope para mais de um fato, teto só em linhas, proxy como piso) são os de maior confiança.</p></div>
+<div class="dimension-summary"><div class="dim-card"><div class="dim-name">Decision-readiness</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Substance over theater</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Strategic coherence</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Done-ness clarity</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div><div class="dim-card"><div class="dim-name">Scope honesty</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Downstream usability</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div><div class="dim-card"><div class="dim-name">Shape fit</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div></div>
+<section class="dimension"><details><summary><h2>Decision-readiness</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Decisões aparecem como decisões, com custo nomeado: CLI por fato em vez de jq, interface única JSON+TSV contra a recomendação de menor escopo, subagent descartado com número e gatilho de reabertura. §8 &quot;Nenhuma&quot; é honesto. Ressalva: as suposições foram fechadas sobre um proxy do CLI que ainda não existe.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Suposições fechadas sem ressalva sobre o proxy</h3><span class="finding-location">§7 SM-1, §9</span></header><div class="finding-note">A linha de base &quot;9 de 9 ≤ 10% do Read&quot; vem de um &quot;proxy do CLI, que ainda não existe&quot;: é o recorte mínimo ideal, um limite inferior. As metas ficam coladas nesse piso (Q3 e Q9 já em +59 bytes). A amostra do subagent é n=1.</div><div class="finding-fix"><strong>Correção:</strong> Manter um <code>[ASSUMPTION]</code> indexado (&quot;o CLI real fica dentro da margem do proxy&quot;) com dono e condição: rodar o benchmark contra o CLI na primeira story.</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Substance over theater</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Sem personas decorativas nem NFR de boilerplate; limiares próprios do produto (50 linhas, 30 linhas, nome do log). A Vision cita bytes reais. Único traço de mobília: FR-8, sem consumidor.</p></div></div><div class="findings-list"></div></details></section>
+<section class="dimension"><details><summary><h2>Strategic coherence</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Tese, escopo e métricas se alinham: SM-1 mede economia, SM-C1 protege a acurácia, SM-C2 protege contra o custo da documentação.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">SM-C2 não protege a promessa da Vision</h3><span class="finding-location">§1 vs §7</span></header><div class="finding-note">A Vision promete ser mais barato que o <code>grep</code> na maioria das perguntas, mas SM-C2 só exige &quot;nunca acima do Read&quot;. Somando skill e <code>--help</code>, Q4 (130 B vs 474 B) e Q6 (224 B vs 365 B) podem passar a custar mais que o <code>grep</code> sem violar métrica.</div><div class="finding-fix"><strong>Correção:</strong> Benchmark de sessão (N perguntas seguidas, docs contados uma vez) comparado ao <code>grep</code>, ou reduzir a promessa da Vision.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">SM-2 sem método de amostragem</h3><span class="finding-location">§7</span></header><div class="finding-note">Sem tamanho de amostra, período nem linha de base.</div><div class="finding-fix"><strong>Correção:</strong> Fixar N e janela, ou declarar verificação manual pontual.</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Done-ness clarity</h2><span class="verdict-pill verdict-adequate">adequate</span></summary><div class="dim-body"><div class="dim-judgment"><p>Muitas FRs têm consequências verificáveis e boas (FR-9, FR-5, FR-6, FR-7, FR-4). Os problemas restantes são de conflito entre critérios e de conteúdo ainda não especificado.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Limite de 30 linhas conflita com a documentação exigida</h3><span class="finding-location">FR-1, FR-6, FR-7, FR-11</span></header><div class="finding-note">FR-1 e FR-6 exigem exemplo e formato por subcomando no <code>--help</code>/<code>SKILL.md</code>; com ~10 subcomandos são 30–50 linhas só de exemplos, e FR-11 limita o corpo da skill a 30. &quot;SKILL.md&quot; é ambíguo (qual das duas skills?). Os testes de aceitação não passam todos ao mesmo tempo.</div><div class="finding-fix"><strong>Correção:</strong> Decidir onde mora o quê: exemplos e formato só no <code>--help</code>, skill com uma linha por subcomando; reescrever FR-1/FR-6/FR-7 para dizer &quot;<code>--help</code>&quot; e qual skill.</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Envelope de FR-5 indefinido para subcomando que lê mais de um fato</h3><span class="finding-location">FR-5, §8</span></header><div class="finding-note"><code>deps</code> lê <code>deps.json</code> e <code>deps.tsv</code>, mas FR-5 prevê um único cabeçalho. Com estados diferentes, não se sabe qual vai nele; SM-C1 fica não verificável.</div><div class="finding-fix"><strong>Correção:</strong> Regra explícita (pior caso entre os fatos, ou duas linhas de cabeçalho) e um caso de teste.</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Teto medido em linhas, não em bytes</h3><span class="finding-location">FR-9</span></header><div class="finding-note">50 linhas de <code>config.json</code> ou <code>bytecode_edges.tsv</code> podem passar de 5–7KB; o benchmark (maior resposta: 17 linhas) não exercita o pior caso.</div><div class="finding-fix"><strong>Correção:</strong> Teto de bytes por linha ou total, ou teste com o maior fato de cada tipo.</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Conteúdo padrão dos subcomandos JSON não especificado</h3><span class="finding-location">FR-1, FR-2, addendum</span></header><div class="finding-note">O que <code>layout</code>, <code>config</code>, <code>docs</code> e <code>reactor</code> devolvem sem filtro fica para a primeira story; os testes de FR-2 só cobrem os <code>awk</code> dos TSVs.</div><div class="finding-fix"><strong>Correção:</strong> Uma linha por subcomando JSON com campos e ordem, mesmo esboçada.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Cabeçalho de FR-3 com reticências</h3><span class="finding-location">FR-3</span></header><div class="finding-note"><code># confianca=alta estado=fresco ... | 0 conflitos</code> não bate com o formato exato de FR-5.</div><div class="finding-fix"><strong>Correção:</strong> Alinhar o exemplo a FR-5 e declarar o sufixo.</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Scope honesty</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Non-Goals fazem trabalho real; Tier 2/3 voltou ao escopo via FR-10; Out of Scope traz gatilhos de reabertura. Densidade de itens abertos baixa.</p></div></div><div class="findings-list"></div></details></section>
+<section class="dimension"><details><summary><h2>Downstream usability</h2><span class="verdict-pill verdict-adequate">adequate</span></summary><div class="dim-body"><div class="dim-judgment"><p>Glossário completo e consistente; IDs FR-1..FR-11 e SMs únicos, sem referência quebrada. Atrito pequeno em jornadas e texto desatualizado.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">UJs cobrem 3 dos 11 FRs</h3><span class="finding-location">§2.3</span></header><div class="finding-note">FR-10 (arestas, os maiores fatos) e <code>docs</code>/<code>config</code>/<code>deps</code> não têm jornada.</div><div class="finding-fix"><strong>Correção:</strong> UJ-4 de uma frase para arestas de bytecode.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Addendum com texto desatualizado</h3><span class="finding-location">addendum</span></header><div class="finding-note">O cabeçalho ainda fala em &quot;proposta de mecanismo via subagent&quot; e uma seção diz &quot;Falta medir o grep equivalente&quot;, ambos superados.</div><div class="finding-fix"><strong>Correção:</strong> Ajustar as duas frases.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">FR-8 sem consumidor nem retenção</h3><span class="finding-location">§4.5</span></header><div class="finding-note">Nenhuma SM usa o log e o <code>gain</code> está fora do MVP; sem rotação o arquivo cresce sem limite.</div><div class="finding-fix"><strong>Correção:</strong> Uma linha: &quot;sem rotação na v1&quot;, ou um limite.</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Shape fit</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Capacidade enxuta, ator único, UJs de uma frase, brownfield bem referenciado.</p></div></div><div class="findings-list"></div></details></section>
+<section class="reviewer-section"><details><summary><h2>Adversarial review</h2><span class="reviewer-source">/home/sawcunha/Projetos/SCOS/_bmad-output/planning-artifacts/prds/prd-SawCunhaOS-Workspace-2026-09-14/review-adversarial-general.md</span></summary><div class="dim-body"><div class="dim-judgment"><p>Veredito: quase pronto, mas ainda não confiável como está. O revisor verificou contra <code>scos-map.py</code>, <code>workspace.json</code> e os fatos reais. A PRD melhorou muito (teto, envelope, FR-4 sobre fato existente, SM-1 por tipo), mas as medições novas são mais fracas do que o texto diz e FR-5 esconde custo e uma lacuna factual. Contagem: 2 críticos, 6 altos, 6 médios, 3 baixos.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">C1. FR-5: <code>fact_state</code> não é barato de reutilizar e não cobre <code>snapshots_locais</code></h3><span class="finding-location">FR-5, FR-4; scos-map.py:2742, 3819</span></header><div class="finding-note"><code>fact_state(fato, files_by_path, files, root)</code> exige <code>scan_files</code> + MultiGit (git e hash de blobs) e, para bytecode, leitura de <code>target/classes</code>: contradiz &quot;só lê fatos&quot; e &quot;não acessa o git&quot;, e a latência nunca é medida. Além disso <code>snapshots_locais</code> não tem <code>derivado_de</code> (verificado): passa por <code>fact_state</code> e sai sempre <code>fresco</code>, mesmo com o fato de 2026-09-14 já com 18 dias. Falso-fresco exatamente na UJ-2.</div><div class="finding-fix"><strong>Correção:</strong> Decidir: pagar o <code>scan_files</code> (medir e assumir a latência) ou usar frescor barato (<code>head</code> gravado vs <code>git rev-parse HEAD</code>, <code>gerado_em</code>). Para <code>snapshots_locais</code>, comparar <code>repo_local.head</code> com o HEAD atual; teste: fixture velha não pode sair <code>fresco</code>. Considerar o custo de import de <code>scos-map.py</code> (hífen no nome, ~3,9 mil linhas).</div></article><article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">C2. O proxy do CLI no benchmark é otimista e não valida SM-1</h3><span class="finding-location">`benchmark-baseline.py`, SM-1</span></header><div class="finding-note">Cabeçalho fixo <code>alta/fresco</code> para todas as perguntas (na realidade há <code>resolvida</code>, <code>media</code>, <code>parcial</code>); Q3 ignora <code>_transitivas_comuns.tsv</code>, que o <code>SKILL.md</code> manda nunca ignorar; respostas não equivalentes (Q1, Q5); o script só mede bytes, nunca compara conteúdo; Q8 não filtra nada (os 10 itens estão <code>jar_desatualizado</code>); <code>jq</code> está instalado e nunca é medido; não há latência; o baseline do <code>Read</code> nunca foi verificado.</div><div class="finding-fix"><strong>Correção:</strong> Rodar o CLI real assim que existir, com asserção de conteúdo; incluir <code>jq</code> como quarto caminho; medir latência; casos com <code>deps</code> dependente de transitivas e com mistura de estados; rotular a tabela como &quot;estimativa otimista&quot;.</div></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">H1. Envelope incompleto: perde <code>completude</code>/<code>limitacoes</code>; &quot;exatamente como constam&quot; é falso</h3><span class="finding-location">FR-5, SM-C1</span></header><div class="finding-note"><code>layout.json</code> não tem <code>estado</code> nem <code>gerado_em</code>. O fato de conflitos é <code>resolvida</code> + <code>parcial</code> com árvore suja; <code>resolvida</code> nem está em SM-C1. O <code>status</code> imprime as limitações, o envelope não, e FR-4 as manda para o <code>--help</code>.</div><div class="finding-fix"><strong>Correção:</strong> Acrescentar <code>completude=</code> e uma linha <code># limitacao:</code> quando <code>parcial</code>; definir a fonte de cada campo; incluir <code>resolvida</code> em SM-C1.</div></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">H2. FR-9: teto só em linhas, ordem indefinida, &quot;50 bastou&quot; em amostra viciada</h3><span class="finding-location">FR-9, FR-2, FR-10</span></header><div class="finding-note"><code>ScosPaginated</code> tem 82 arestas internas de entrada e já estoura o teto. Não se diz quais 50 linhas sobrevivem nem se o cabeçalho conta; o aviso pode levar a concluir &quot;o módulo não usa X&quot;. &quot;Refine com filtro&quot; conflita com FR-2, que fechou os filtros.</div><div class="finding-fix"><strong>Correção:</strong> Teto duplo (linhas e bytes), ordem determinística, aviso &quot;N de M casam&quot;, filtro de origem/destino explícito em FR-2 para FR-10; recalibrar com perguntas quentes.</div></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">H3. Experimento do subagent: n=1, unidades diferentes, equilíbrio de 120KB incoerente</h3><span class="finding-location">addendum, §5</span></header><div class="finding-note">34.315 tokens medidos contra 770 estimados por bytes/3,5. O equilíbrio de 120KB assume resumo a custo zero, mas a devolução literal &quot;nunca&quot; compensa; o limiar de 100KB não tem fundamento.</div><div class="finding-fix"><strong>Correção:</strong> Reescrever como &quot;hipótese descartada, amostra única, reabrir se aparecer digest&quot; e remover o número 120KB/100KB.</div></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">H4. FR-4/UJ-2: <code>snapshots_locais</code> gera alarme constante</h3><span class="finding-location">FR-4, UJ-2</span></header><div class="finding-note">Todos os 10 itens estão <code>jar_desatualizado</code>; um commit de docs na Foundation marca todos os jars. O agente aprende a ignorar o sinal.</div><div class="finding-fix"><strong>Correção:</strong> Mostrar a limitação na saída e agrupar por <code>produzido_por</code>, em vez de uma linha por GA.</div></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">H5. FR-11: critério mede linhas, não tokens, e as FRs 1/6/7/11 são incompatíveis</h3><span class="finding-location">FR-11, FR-7, FR-1, FR-6</span></header><div class="finding-note">O <code>SKILL.md</code> atual tem 218 linhas; reduzir a ponteiro apaga conteúdo (interpretação de confiança, armadilha do <code>deps.tsv</code>) sem inventário de para onde vai, e a armadilha das transitivas reintroduz o erro &quot;o módulo não usa X&quot;.</div><div class="finding-fix"><strong>Correção:</strong> Medir por caracteres/tokens; decidir onde moram os exemplos; listar o que a skill perde e onde fica.</div></article><article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">H6. FR-2: &quot;equivalente via CLI&quot; de <code>awk</code> ad hoc é superfície vaga</h3><span class="finding-location">FR-2, FR-7, FR-11</span></header><div class="finding-note">Exemplos reais do <code>SKILL.md</code> usam operador numérico (<code>$10&gt;5</code>) e glob sobre todos os módulos (<code>facts/*/deps.tsv</code>); a assinatura de FR-1 não os cobre. O conjunto muda quando FR-7/FR-11 reescrevem o <code>SKILL.md</code>.</div><div class="finding-fix"><strong>Correção:</strong> Enumerar os filtros numa tabela fixa na PRD e congelar; incluir <code>deps</code> sem módulo e operadores numéricos.</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">M1. SM-1: meta ≤10% quebra em fatos pequenos; meta de TSV é circular</h3><span class="finding-location">SM-1</span></header><div class="finding-note">O cabeçalho (~58 B) sozinho passa de 10% de um fato de 617 bytes. A tolerância de TSV (60 B) está calibrada ao resultado: Q9 sai por 59 B. 80% de 4 JSON é &quot;todas&quot;.</div><div class="finding-fix"><strong>Correção:</strong> Meta de ≤10% só para fatos acima de X KB; tolerância de TSV em número absoluto e percentual; dizer que 9 perguntas são regressão, não generalização.</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">M2. Motivação: TSV &quot;só interface única&quot; vs. custo do envelope e FR-10</h3><span class="finding-location">§1, FR-10</span></header><div class="finding-note">Para TSV o ganho em bytes é ~0, mas FR-10 (maior risco) está no MVP e SM-1 mede exatamente o que não rende.</div><div class="finding-fix"><strong>Correção:</strong> Registrar que o ganho em TSV é acurácia/envelope e medir isso (ex.: aviso de <code>bytecode_edges.tsv</code> obsoleto).</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">M3. Resíduos da decisão revertida do subagent e §8/§9 &quot;Nenhuma&quot;</h3><span class="finding-location">§4.4, glossário, addendum</span></header><div class="finding-note">§4.4 ainda fala em &quot;subagent intermediário&quot;; o addendum ainda diz que o desenho com agente &quot;fica como ponto de partida&quot;; há <code>[NOTE FOR PM]</code> abertas.</div><div class="finding-fix"><strong>Correção:</strong> Podar glossário e §4.4; mover o experimento ao addendum.</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">M4. FR-8: raiz do workspace ambígua, concorrência e log sem leitor</h3><span class="finding-location">FR-8</span></header><div class="finding-note">Se o agente roda de dentro de um repo, &quot;raiz do workspace&quot; é ambígua; appends concorrentes sem lock podem intercalar linhas; ninguém consome o log.</div><div class="finding-fix"><strong>Correção:</strong> Definir a raiz como o diretório que contém <code>.scos-map/workspace.json</code> (ou variável de ambiente); limite/rotação ou cortar FR-8 até existir o <code>gain</code>.</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">M5. NFR-1: nome &quot;fixo&quot; diverge do comando real</h3><span class="finding-location">NFR-1, glossário</span></header><div class="finding-note">Não há wrapper/PATH; o agente digitará <code>python3 ferramentas/scos-map/scos-map-query.py</code>, e a skill carregaria esse caminho em cada exemplo. Versão mínima de Python não dita.</div><div class="finding-fix"><strong>Correção:</strong> Fixar o comando literal e a versão mínima de Python.</div></article><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">M6. Filtro com zero resultado lido como &quot;não usa X&quot;</h3><span class="finding-location">FR-1, FR-2, FR-10</span></header><div class="finding-note">Só FR-3 trata zero linhas; um <code>deps</code> filtrado por <code>jjwt</code> com zero casas parece &quot;o módulo não usa jjwt&quot;, errado pela armadilha das transitivas.</div><div class="finding-fix"><strong>Correção:</strong> Toda saída lista fontes consultadas e contagem de casamentos.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">L1. Q7/Q8: baseline do <code>Read</code> é só 18,5KB</h3><span class="finding-location">Q7, Q8</span></header><div class="finding-note">A economia absoluta é modesta (~5k tokens); o valor dessas consultas é semântico, não de bytes.</div><div class="finding-fix"><strong>Correção:</strong> Registrar isso.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">L2. UJs cobrem 3 dos 8 subcomandos</h3><span class="finding-location">§2.3</span></header><div class="finding-note">FR-10, o maior risco, está no MVP sem jornada.</div><div class="finding-fix"><strong>Correção:</strong> UJ de arestas.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">L3. Benchmark não portável</h3><span class="finding-location">`benchmark-baseline.py`</span></header><div class="finding-note">Caminho absoluto, timestamp fixo, mapa de repos ignorados pelo git e script não versionado; &quot;repetível&quot; só nesta máquina e estado.</div><div class="finding-fix"><strong>Correção:</strong> Fixtures em <code>tests/</code> ou registrar o hash do mapa usado.</div></article></div><div class="dim-body"><div class="dim-judgment"><p>Preservar: FR-4 lê o fato <code>snapshots_locais</code>, que existe com os campos citados (verificado); envelope com cabeçalho único e marca só quando difere, com teste de contrato; medição real em lugar de suposição (a inversão <code>Read</code> vs <code>grep</code> nos JSON é genuína); descarte do subagent no MVP; NFR-1 stdlib-only confere com <code>scos-map.py</code>; teste golden por subcomando e erro com o comando de build a rodar.</p></div></div></details></section>
+<div class="mechanical"><h3>Mechanical notes</h3><ul><li>Delta vs rodada 1 (rubrica): cerca de 10 achados resolvidos — limite de saída (FR-9), Tier 2/3 (FR-10), formato do envelope, definição de &quot;desatualizado&quot; (FR-4), FR-2 enumerado, instrumentação de SM-1/SM-2/SM-C1, OQ-1 e OQ-3, conflito FR-8×FR-1, premissa da Vision medida e drift de glossário. Atenuados: conteúdo por subcomando, UJs, SM-2. Novos: 7.</li><li>Delta vs rodada 1 (adversarial): resolvidos os críticos de tokens reais do FR-8 e de teto de saída; SM-1 e FR-4 resolvidos só em parte (surgiram C1 e C2); abertos: escopo TSV, exemplo por subcomando, jornadas. O adversarial trouxe 2 críticos novos que a rubrica não viu, ambos verificados no código.</li><li>Assumptions Index vazio e sem <code>[ASSUMPTION]</code> inline: o roundtrip fecha, mas ver o achado do proxy (rubrica) e C2 (adversarial).</li><li>IDs FR-1..FR-11, NFR-1, SM-1/2/C1/C2 contíguos e únicos; FR-9 e FR-10 aparecem em §4.1 antes de FR-3..FR-8 (ordem de leitura não numérica). Tabela do addendum bate com o texto de SM-1 e da Vision.</li><li>Memlog consistente com o PRD; a linha &quot;(assumption) Pendentes ...&quot; está superada por decisões posteriores, sem impacto.</li></ul></div>
+<footer class="report-footer"><div class="meta"><span>Rubric: .claude/skills/bmad-prd/assets/prd-validation-checklist.md</span><span>Generated: 2026-10-02T11:05:03-03:00</span></div></footer>
+</div></body></html>

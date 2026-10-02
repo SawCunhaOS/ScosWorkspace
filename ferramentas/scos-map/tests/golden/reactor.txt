@@ -1,0 +1,8 @@
+# confianca=alta estado=fresco gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+## modulos (3 de 3)	id	tipo
+_raiz	pom
+app	jar
+lib/core	jar
+## arestas (1 de 1)	de	para	scope
+app	lib/core	compile
+# 4 de 4 linhas casam | fontes: proj/.scos-map/facts/_reactor.json

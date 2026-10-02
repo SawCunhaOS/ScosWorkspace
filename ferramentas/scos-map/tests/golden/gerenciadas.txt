@@ -1,0 +1,5 @@
+# confianca=- estado=fresco gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+## gerenciadas (2 de 2)	ga	versao	origem	scope
+org.springframework.kafka:spring-kafka-bom	4.1.1	propria	import
+com.google.errorprone:error_prone_annotations	2.48.0	propria	compile
+# 2 de 2 linhas casam | fontes: proj/.scos-map/facts/app/gerenciadas.tsv

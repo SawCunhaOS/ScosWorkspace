@@ -1,0 +1,6 @@
+# confianca=alta estado=fresco gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+## arquivos (3 de 3)	path	bytes
+app/src/main/resources/application.yml	1200
+app/src/main/resources/application-dev.yml	340
+app/pom.xml	900
+# 3 de 3 linhas casam | fontes: proj/.scos-map/facts/app/config.json

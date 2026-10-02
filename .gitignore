@@ -3,3 +3,5 @@
 /sawcunha-open-system-bom/
 /SawCunhaOS-Foundation/
 /SawCunhaOS-Flow/
+/.scos-map-query.log
+*.pyc

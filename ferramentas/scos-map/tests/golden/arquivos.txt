@@ -1,0 +1,7 @@
+# confianca=- estado=fresco gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
+# aviso: historico de arquivo nao esta no mapa
+## arquivos (3 de 3)	path	kind	module	commits_90d
+app/A.java	codigo	app	7
+app/B.java	codigo	app	5
+app/README.md	doc	app	9
+# 3 de 3 linhas casam | fontes: proj/.scos-map/files.tsv

@@ -4,6 +4,7 @@ Cada fixture reproduz um caso que ja quebrou o script ou que ele precisa
 sustentar. Nenhuma depende de rede, de Maven ou de um repositorio real.
 """
 
+import json
 import os
 import subprocess
 import zipfile
@@ -593,4 +594,122 @@ def workspace_scope_e_bom(base: Path):
                  "\\- org.y:so-teste:jar:%s:test" % v_teste])})
         git_init(p)
         _tocar_depois(p / "target/.scos-map-tree.txt", p / "pom.xml")
+    return base
+
+
+# ---------------------------------------------------------------------------
+# Mapa sintetico para o scos-map-query (escrito a mao, sem rodar o gerador)
+# ---------------------------------------------------------------------------
+
+GERADO_FIXO = "2026-09-15T00:32:06Z"
+LAYOUT_APP = {
+    "fato": "layout", "modulo": "app", "confianca": "alta",
+    "base": "varredura de diretorio + regex de anotacao",
+    "pacote_base": "br.com.scos.app", "arquivos": 12,
+    "derivado_de": {"app/A.java": "0123456789ab"},
+    "areas": [
+        {"caminho": "app/src/main/java/br/com/scos/config",
+         "papel": "config", "arquivos": 8},
+        {"caminho": "app/src/main/java/br/com/scos/util",
+         "papel": "util", "arquivos": 1}],
+    "entrypoints": [
+        {"path": "app/src/main/java/br/com/scos/Api.java", "tipo": "http"},
+        {"path": "app/src/main/java/br/com/scos/Api.java", "tipo": "rota",
+         "rota": "REQUEST /api"}],
+}
+CONFIG_APP = {
+    "fato": "config", "modulo": "app", "confianca": "alta",
+    "base": "PyYAML safe_load (valores omitidos)",
+    "arquivos": [
+        {"path": "app/src/main/resources/application.yml", "bytes": 1200,
+         "chaves": ["SEGREDO_NUNCA_MOSTRAR"]},
+        {"path": "app/src/main/resources/application-dev.yml", "bytes": 340},
+        {"path": "app/pom.xml", "bytes": 900}],
+}
+DOCS_APP = {
+    "fato": "docs", "modulo": "app", "confianca": "alta",
+    "completude": {"nivel": "parcial", "limitacoes": ["subtipo vem do caminho"]},
+    "itens": [
+        {"path": "app/docs/adr/0001-cache.md", "titulo": "ADR 1: Cache",
+         "subtipo": "adr"},
+        {"path": "app/README.md", "titulo": "App do SCOS", "subtipo": "readme"},
+        {"path": "app/docs/guia.md", "titulo": "Guia", "subtipo": "outro"}],
+}
+REACTOR = {
+    "fato": "reactor", "modulo": "_reactor", "confianca": "alta",
+    "base": "poms", "derivado_de": {},
+    "modulos": [{"id": "_raiz", "tipo": "pom"}, {"id": "app", "tipo": "jar"},
+                {"id": "lib/core", "tipo": "jar"}],
+    "arestas_internas": [{"de": "app", "para": "lib/core", "scope": "compile"}],
+}
+GERENCIADAS_APP = (
+    "ga\tversao\torigem\tscope\n"
+    "org.springframework.kafka:spring-kafka-bom\t4.1.1\tpropria\timport\n"
+    "com.google.errorprone:error_prone_annotations\t2.48.0\tpropria\tcompile\n")
+FILES_TSV = (
+    "path\tblob\tbytes\tlines\tmodule\tkind\tlast_commit\tlast_modified\tauthor"
+    "\tcommits_90d\ttracked\n"
+    "app/A.java\tb1\t10\t1\tapp\tcodigo\tc\t2026-01-01\tx\t7\t1\n"
+    "app/B.java\tb2\t10\t1\tapp\tcodigo\tc\t2026-01-01\tx\t5\t1\n"
+    "app/README.md\tb3\t10\t1\tapp\tdoc\tc\t2026-01-01\tx\t9\t1\n"
+    "lib/core/C.java\tb4\t10\t1\tlib/core\tcodigo\tc\t2026-01-01\tx\t6\t1\n")
+# colunas fora de ordem de proposito: o acesso e por nome (AD-3)
+DEPS_APP = (
+    "origem\ttipo\tga\tversao\tscope\tdivergente\n"
+    "effective-pom\tdireta\tio.jsonwebtoken:jjwt-api\t0.12.6\tcompile\t\n"
+    "transitiva\ttransitiva\tcom.x:y\t1.0\truntime\t\n")
+DEPS_LIB = (
+    "origem\ttipo\tga\tversao\tscope\tdivergente\n"
+    "effective-pom\tdireta\tio.jsonwebtoken:jjwt-impl\t0.12.6\tcompile\t\n")
+TRANSITIVAS = "ga\tversao\tscope\norg.jspecify:jspecify\t1.0.1\tcompile\n"
+MODULOS_MAPA = ["_raiz", "app", "app/core", "lib/core"]
+
+
+def mapa_sintetico(base: Path, projeto="proj", head=None, schema="2.1",
+                   estado="fresco", layout=None, schema_indice=None, docs=None):
+    """Workspace com um projeto (repo git real) e o fato layout do modulo app.
+
+    head=None grava o HEAD real do repo (mapa fresco); passe outro valor para
+    simular repo que andou depois do mapa.
+    """
+    repo = base / projeto
+    escrever(repo, {"pom.xml": "<project/>\n"})
+    git_init(repo)
+    real = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(repo),
+                          capture_output=True, text=True).stdout.strip()
+    head_mapa = head or real[:12]
+    layout = LAYOUT_APP if layout is None else layout
+    fatos = {"app": {n: {"estado": estado, "arquivo": "facts/app/%s.json" % n}
+                     for n in ("layout", "config", "docs", "deps")},
+             "lib/core": {"deps": {"estado": estado,
+                                   "arquivo": "facts/lib/core/deps.json"}}}
+    mapa = repo / ".scos-map"
+    escrever(mapa, {
+        "index.json": json.dumps({
+            "schema_versao": schema_indice or schema,
+            "gerado_em": GERADO_FIXO, "git": {"head": head_mapa},
+            "reactor": "facts/_reactor.json",
+            "arquivos": {"tsv": "files.tsv"},
+            "tabelas": {"facts/app/gerenciadas.tsv": {}},
+            "modulos": {m: {"fatos": fatos.get(m, {})} for m in MODULOS_MAPA}}),
+        "facts/_reactor.json": json.dumps(REACTOR),
+        "facts/app/gerenciadas.tsv": GERENCIADAS_APP,
+        "files.tsv": FILES_TSV,
+        "facts/_transitivas_comuns.tsv": TRANSITIVAS,
+        "facts/app/deps.tsv": DEPS_APP,
+        "facts/lib/core/deps.tsv": DEPS_LIB,
+        **{"facts/%s/deps.json" % m: json.dumps({
+            "fato": "deps", "modulo": m, "confianca": "resolvida",
+            "completude": {"nivel": "total"}, "corpo": "deps.tsv",
+            "fecho_comum_arquivo": "../_transitivas_comuns.tsv"})
+           for m in ("app", "lib/core")},
+        "facts/app/layout.json": json.dumps(layout),
+        "facts/app/config.json": json.dumps(CONFIG_APP),
+        "facts/app/docs.json": json.dumps(DOCS_APP if docs is None else docs),
+    })
+    escrever(base / ".scos-map", {"workspace.json": json.dumps({
+        "schema_versao": schema, "tipo": "workspace", "gerado_em": GERADO_FIXO,
+        "projetos": [{"projeto": projeto,
+                      "index": "%s/.scos-map/index.json" % projeto,
+                      "modulos": MODULOS_MAPA}]})})
     return base
