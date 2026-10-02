@@ -7,7 +7,7 @@ PERGUNTA = "que documentacao existe sobre um assunto no modulo"
 ESCOPO = "modulo"
 FLAGS = [(["--texto"], {"help": "termo em path ou titulo, sem diferenciar maiusculas"}),
          (["--prefixo"], {"help": "so paths com este prefixo"})]
-AVISO = "frontmatter lido literalmente; sem status nao e rascunho"
+AVISO = "doc antigo pode estar defasado; frontmatter literal: sem status nao e rascunho"
 EXEMPLO = (
     "## documentos (2 de 2)\tpath\ttitulo\tsubtipo\n"
     "docs/adr/0001-cache.md\tADR 1: cache\tadr\n"
@@ -19,7 +19,8 @@ AJUDA = (
     "Subtipos (do caminho ou titulo): adr prd epic story spec runbook\n"
     "arquitetura changelog readme contrato; fora de convencao = outro.\n"
     "Documento antigo ao lado de codigo recente pode estar desatualizado:\n"
-    "confira a data antes de confiar. Abra o arquivo para ler o conteudo.\n"
+    "confira a data antes de confiar. Frontmatter e lido literalmente: sem\n"
+    "status nao significa rascunho nem aprovado. Abra o arquivo para ler.\n"
     "Exemplo:\n" + EXEMPLO + "\n")
 
 

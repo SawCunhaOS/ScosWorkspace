@@ -71,6 +71,8 @@ F = FLOW + "/.scos-map/facts/"
 U = F + USECASE + "/"
 Q1_6 = {"Q1", "Q2", "Q3", "Q4", "Q5", "Q6"}
 TR = F + "_transitivas_comuns.tsv"
+# SKILL.md antigo de scos-map (218 linhas, 10,6KB; ver `git show 7204da9:.claude/skills/scos-map/SKILL.md | wc -c`), custo do lado Read
+SKILL_ANTIGO_BYTES = 10600
 
 
 @unittest.skipUnless(_tem_mapa() and shutil.which("grep"), "mapa real ou grep ausente")
@@ -154,6 +156,7 @@ class TestBenchmarkSM1(unittest.TestCase):
         self.assertEqual(_rodape_n(out), len(itens))
         read = _tam(".scos-map/workspace.json")
         self.assertLessEqual(len(out.encode()), 0.10 * read, "Q7 CLI/Read")
+        self.med["Q7"] = (len(out.encode()), 0, read, False)
 
     def test_q8_snapshots(self):
         itens = _json(".scos-map/workspace.json")["snapshots_locais"]["itens"]
@@ -242,6 +245,25 @@ class TestBenchmarkSM1(unittest.TestCase):
         for n, (c, g, _, j) in self.med.items():
             if not j and n in Q1_6:
                 self.assertLessEqual(c, max(g + 64, 1.1 * g), "%s TSV" % n)
+
+    def test_zz_sessao_smc2(self):
+        """SM-C2: sessao Q1+Q5+Q6+Q7+Q9 (skill 1x + --help usados + saidas) <= 10% da via Read."""
+        qs = ("Q1", "Q5", "Q6", "Q7", "Q9")
+        for q in qs:
+            if q not in self.med:
+                self.skipTest("rode a classe inteira (%s nao medida)" % q)
+        skill = Path(__file__).resolve().parents[3] / ".claude/skills/scos-query/SKILL.md"
+        helps = [_cli("--help"), _cli("--help", "confianca")] + [
+            _cli(c, "--help") for c in ("layout", "docs", "reactor", "conflitos", "arestas")]
+        cli = len(skill.read_bytes()) + sum(len(h.encode()) for h in helps) \
+            + sum(self.med[q][0] for q in qs)
+        read = SKILL_ANTIGO_BYTES + sum(self.med[q][2] for q in qs)
+        print("\nSM-C2 sessao CLI/Read: %.3f (%d/%d B)" % (cli / read, cli, read),
+              file=sys.stderr)
+        self.assertLessEqual(cli, 0.10 * read)
+        grep = sum(self.med[q][1] for q in qs if q != "Q7")
+        print("SM-C2 informativo: CLI (sem Q7) / grep = %.2f" % (
+            (cli - self.med["Q7"][0]) / max(grep, 1)), file=sys.stderr)
 
 
 if __name__ == "__main__":

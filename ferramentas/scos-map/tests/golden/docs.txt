@@ -1,5 +1,5 @@
 # confianca=alta estado=fresco completude=parcial gerado=2026-09-15T00:32:06Z commits_desde_o_mapa=0
-# aviso: frontmatter lido literalmente; sem status nao e rascunho
+# aviso: doc antigo pode estar defasado; frontmatter literal: sem status nao e rascunho
 # limitacao: subtipo vem do caminho
 ## documentos (3 de 3)	path	titulo	subtipo
 app/docs/adr/0001-cache.md	ADR 1: Cache	adr

@@ -69,17 +69,8 @@ python3 ferramentas/scos-map/scos-map.py workspace . --only <projeto>  # reproce
 
 Leitura: comece por `.scos-map/workspace.json` na raiz — lista os projetos e aponta o `index.json` de
 cada um; `conflitos_de_versao_cruzados` é o único fato que compara bibliotecas entre os repos. Dentro
-de um projeto, leia **apenas** `<repo>/.scos-map/index.json` e abra só os fatos que a pergunta exige:
-
-| Pergunta é sobre | Abra |
-|---|---|
-| onde mora o quê, ponto de entrada, convenção de pacote | `facts/<mod>/layout.json` |
-| configs, chaves, perfis | `facts/<mod>/config.json` |
-| dependências, versões declaradas x resolvidas | `facts/<mod>/deps.json` + `deps.tsv` |
-| versões que a BOM fixa (`dependencyManagement`) | `facts/<mod>/gerenciadas.tsv` |
-| documentação existente sobre X | `facts/<mod>/docs.json` |
-| fronteiras entre módulos, conflito de versão | `facts/_reactor.json` |
-| listar/filtrar arquivos, churn | `files.tsv` (grep/awk — não carregar inteiro) |
+de um projeto, leia **apenas** `<repo>/.scos-map/index.json` e abra só os fatos que a pergunta exige.
+Roteamento pergunta → subcomando: skill `scos-query` (`.claude/skills/scos-query/SKILL.md`), tabela única.
 
 Tier 1 (`scan`/`workspace` sem flag) cobre a maioria das perguntas de navegação, em segundos, sem
 build — é o suficiente para uso rotineiro. Só escale para `--tier 2` (exige `target/classes`; o

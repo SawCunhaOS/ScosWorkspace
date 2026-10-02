@@ -19,6 +19,7 @@ AJUDA = (
     "Arquivos do mapa: path, kind, module, commits_90d. --em-modulo e --kind\n"
     "comparam a coluna por igualdade; --commits-90d-min filtra numericamente.\n"
     "Equivale aos awk de files.tsv: $5==M && $6==K e $10>=N.\n"
+    "Historico do arquivo nao esta no mapa: git log --follow -- <path>.\n"
     "Exemplo:\n" + EXEMPLO + "\n")
 
 

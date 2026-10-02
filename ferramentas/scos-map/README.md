@@ -70,3 +70,14 @@ cd <workspace> && python3 ferramentas/scos-map/scos-map.py workspace .
 O primeiro `workspace` imprime um plano com o que falta no ambiente
 (PyYAML, mvn, JDK) antes de gastar tempo. Nada e obrigatorio: o que faltar
 degrada o fato correspondente com o motivo escrito.
+
+## Verificação de adoção (SM-2, pós-adoção)
+
+Feita por quem revisa, não por teste automático: 20 perguntas de organização de código distribuídas em
+5 sessões novas (4 por sessão), com a skill `scos-query` disponível. Para cada pergunta registre se o
+agente chamou o CLI antes de qualquer `Read` de fato bruto (confira em `.scos-map-query.log` e no
+transcript). Quem mede é quem revisa, nunca quem implementou a mudança. O `.scos-map-query.log` (raiz do workspace,
+ou `SCOS_MAP_QUERY_LOG`) registra uma linha TSV por chamada do CLI: use-o para ver a ordem das chamadas.
+Baseline: as mesmas perguntas, nas 5 sessões anteriores à skill, contando quantas começaram por `Read`
+de fato bruto ou `grep`. Meta: ≥ 90% (18 de 20) começam pelo CLI. Abaixo disso, revise a `description` da
+`scos-query` e a tabela de roteamento (`PERGUNTA` dos módulos de `comandos/`).

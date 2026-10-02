@@ -8,7 +8,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from . import comandos, fatos, render
+from . import ajuda, comandos, fatos, render
 from .modelo import ErroConsulta, Opcoes
 
 ACAO_AJUDA = "python3 ferramentas/scos-map/scos-map-query.py --help"
@@ -89,7 +89,14 @@ def _executar(argv, cwd, lidos, ctx):
     if any(a in ("-h", "--help") for a in argv):
         if argv and argv[0] in reg:
             return reg[argv[0]].AJUDA.rstrip("\n")
-        return "\n".join("%s\t%s" % (n, m.PERGUNTA) for n, m in reg.items())
+        topicos = [a for a in argv if a not in ("-h", "--help")]
+        if topicos == ["confianca"]:
+            return ajuda.CONFIANCA.rstrip("\n")
+        if topicos:
+            raise ErroConsulta(2, "topico de ajuda desconhecido: %s" % " ".join(topicos),
+                               ACAO_AJUDA)
+        return "\n".join(["%s\t%s" % (n, m.PERGUNTA) for n, m in reg.items()]
+                         + ["", "scos-map-query <subcomando> --help | --help confianca"])
     parser = _Parser(prog="scos-map-query", add_help=False)
     sub = parser.add_subparsers(dest="subcomando", required=True)
     for nome, m in reg.items():

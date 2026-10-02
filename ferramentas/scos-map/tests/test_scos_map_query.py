@@ -987,6 +987,55 @@ class TestTabelasEReactor(BaseMapa):
             self.assertTrue(3 <= n <= 5, nome)
 
 
+class TestHelpGeral(BaseMapa):
+    def test_help_geral_lista_registro_com_pergunta(self):
+        from scos_map_query.cli import _registro
+        rc, out, err = consultar(self.mapa(), "--help")
+        self.assertEqual((rc, err), (0, ""))
+        reg = _registro()
+        self.assertEqual(len(reg), 13)
+        for n, m in reg.items():
+            self.assertIn("%s\t%s" % (n, m.PERGUNTA), out.splitlines())
+
+    def test_help_confianca_legenda_e_teto(self):
+        rc, out, err = consultar(self.mapa(), "--help", "confianca")
+        self.assertEqual((rc, err), (0, ""))
+        self.assertLessEqual(len(out.encode()), 2500)
+        for t in ("confianca", "estado", "desconhecido", "completude", "desvios",
+                  "base", "nao_aplicavel", "LEGITIMO"):
+            self.assertIn(t, out)
+
+    def test_help_confianca_ordem_inversa_e_topico_desconhecido(self):
+        _, ref, _ = consultar(self.mapa(), "--help", "confianca")
+        for args in (("confianca", "--help"), ("-h", "confianca")):
+            self.assertEqual(consultar(self.mapa(), *args)[1], ref)
+        rc, out, _ = consultar(self.mapa(), "--help", "xyz")
+        self.assertEqual(rc, 2)
+        self.assertIn("xyz", out)
+
+    def test_help_de_cada_subcomando_ate_1500_bytes(self):
+        from scos_map_query.cli import _registro
+        for n, m in _registro().items():
+            self.assertLessEqual(len(m.AJUDA.encode()), 1500, n)
+
+    def test_help_cobre_regras_do_inventario(self):
+        from scos_map_query.cli import _registro
+        regras = {
+            "docs": ["Frontmatter", "adr", "desatualizado"],
+            "arquivos": ["git log --follow"],
+            "deps": ["effective-pom", "_transitivas_comuns.tsv"],
+            "conflitos": ["(gerenciada)", "test", "arvore suja"],
+            "snapshots": ["jar_atual"],
+            "tests": ["nunca 'X esta testada'", "nao_analisado"],
+            "bytecode": ["deps_usadas_ausentes_do_pom", "deps_ignoradas_na_analise"],
+            "callgraph": ["codigo morto", "Ausencia de aresta nao prova"],
+        }
+        reg = _registro()
+        for n, termos in regras.items():
+            for t in termos:
+                self.assertIn(t, reg[n].AJUDA, "%s: %s" % (n, t))
+
+
 if __name__ == "__main__":
     unittest.main()
 

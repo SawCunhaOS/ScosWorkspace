@@ -1,6 +1,6 @@
 ---
 name: scos-map-build
-description: Gera, regenera e mantem o mapa estrutural .scos-map/ dos repositorios SCOS. Use quando nao existe mapa, quando o status acusa fatos obsoletos, quando e preciso escalar para bytecode ou callgraph, ou para diagnosticar por que um fato saiu vazio, indisponivel ou com confianca rebaixada. Para apenas LER o mapa e responder perguntas sobre o codigo, use a skill scos-map.
+description: Gera, regenera e mantem o mapa estrutural .scos-map/ dos repositorios SCOS. Use quando nao existe mapa, quando o status acusa fatos obsoletos, quando e preciso escalar para bytecode ou callgraph, ou para diagnosticar por que um fato saiu vazio, indisponivel ou com confianca rebaixada. Para apenas LER o mapa e responder perguntas sobre o codigo, use a skill scos-query.
 ---
 
 # scos-map-build (geracao e manutencao)
