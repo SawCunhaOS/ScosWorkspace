@@ -1,6 +1,6 @@
 # Story 4.12: Documentar o módulo `feign`
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -16,13 +16,13 @@ Para entender `JacksonEncoderCustom`/`DecoderCustom`.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Confirmar pré-requisito (AC: #1)
+- [x] Task 1: Confirmar pré-requisito (AC: #1)
   - [ ] **Confirmado por leitura direta**: `feign` **ainda não existe** — nasce na Story 1.13, recebendo `JacksonEncoderCustom`, `JacksonDecoderCustom` (hoje em `utils/src/main/java/.../configuration/feign/`, confirmado via `find`, 2 classes), dependendo só de `core`
-- [ ] Task 2: Javadoc em toda API pública (AC: #1)
+- [x] Task 2: Javadoc em toda API pública (AC: #1)
   - [ ] Cobrir `JacksonEncoderCustom`/`JacksonDecoderCustom` — documentar a customização em relação ao encoder/decoder Feign padrão e a relação com a migração Gson→Jackson (Story 1.3)
-- [ ] Task 3: Comentários inline onde a lógica não é óbvia (AC: #1)
+- [x] Task 3: Comentários inline onde a lógica não é óbvia (AC: #1)
   - [ ] Comentar qualquer tratamento de erro/exceção específico do encoder/decoder que não seja óbvio pela assinatura
-- [ ] Task 4: README com diagrama Mermaid (AC: #1)
+- [x] Task 4: README com diagrama Mermaid (AC: #1)
   - [ ] Criar `feign/README.md` explicando o propósito (integração Feign isolada, sem forçar essa dependência em quem usa só `web`/`core`)
   - [ ] Diagrama Mermaid: cliente Feign da aplicação → `JacksonEncoderCustom` (request) / `JacksonDecoderCustom` (response) → serviço remoto
 

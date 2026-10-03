@@ -1,6 +1,6 @@
 # Story 4.14: Documentar o módulo `audit`
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -53,5 +53,9 @@ Para entender o fluxo sem ler o código.
 ### Debug Log References
 
 ### Completion Notes List
+
+- Decisão: Mermaid `flowchart` adicionado **sem remover** a ASCII (ASCII mantida como referência em texto puro).
+- Divergência: a story assumia o gate Javadoc cumprido; havia 31 avisos, agora 0. `ScosAuditReadAspect` e o registro do `ScosHibernateAuditListener` não existem no código; documentado (ver spec-4-14).
+- `mvn -pl audit test` e `mvn -pl audit verify` (ITs Testcontainers): 56 testes, 0 falhas.
 
 ### File List

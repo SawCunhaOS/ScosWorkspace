@@ -416,3 +416,74 @@
 - source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-6-documentar-o-módulo-archtest.md`
   summary: A nova seção "Gate de Javadoc" do `archtest/README.md` só cobre o Checkstyle; o perfil `analyze` da raiz também liga JaCoCo (mínimo de cobertura 0.80), SpotBugs e OWASP dependency-check, e não fica documentado se/como essas outras checagens tratam um módulo sem `src/main/java`.
   evidence: Achado pelo Blind Hunter durante a revisão desta story. Fora de escopo: a AC2 desta story (e o Approach congelado da spec) cobre só o gate de Javadoc; verificar o comportamento de JaCoCo/SpotBugs/OWASP para um módulo sem código de produção exigiria investigação própria fora do que foi pedido.
+
+- source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-8-documentar-o-módulo-validation.md`
+  summary: `Cpf.setTaxIdentifier` e `Cnpj.setTaxIdentifier` têm nome copiado de `TaxIdentifier` (deveriam ser `setCpf`/`setCnpj`).
+  evidence: Leitura direta dos value objects; documentado no Javadoc/README. Fora de escopo: renomear é mudança de API pública, vedada por uma story só de documentação.
+
+- source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-8-documentar-o-módulo-validation.md`
+  summary: `CpfValidator`/`CnpjValidator`/`TaxIdentifierValidator.isValid(null)` lançam exceção do `caelum-stella` em vez de seguir a convenção Bean Validation (`null` é válido); `ZipCodeValidator` rejeita `null`. Além disso `ZipCodeValidator` aceita `"01001000\n"` (`$` do Java casa antes de `\n` final).
+  evidence: Leitura do código; documentado no Javadoc. Fora de escopo: muda comportamento.
+
+- source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-8-documentar-o-módulo-validation.md`
+  summary: O índice de módulos do `README.md` raiz continua sem citar `validation`.
+  evidence: Mesma lacuna das Stories 4.2/4.5; correção cross-cutting.
+
+- source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-9-documentar-o-módulo-cache.md`
+  summary: `ScosCacheProperties.enableCompression`/`compressionThreshold` e `ScosCacheModel.allowNullValues`/`maxSize`/`description` não são lidos por `ScosCacheConfiguration` (sem efeito); implementar ou remover.
+  evidence: Leitura do código e grep; documentado no Javadoc/README. Fora de escopo: muda comportamento/API.
+
+- source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-9-documentar-o-módulo-cache.md`
+  summary: `ScosCacheKeyGenerator` descarta por substring parâmetros "sensíveis" (colisão de chaves, ex. "tokenizer") e usa `String.hashCode` para parâmetros longos (colisões); `generateFallbackKey` usa `currentTimeMillis` (nunca acerta).
+  evidence: Leitura do código; documentado. Fora de escopo: muda comportamento.
+
+- source_spec: `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/spec-4-9-documentar-o-módulo-cache.md`
+  summary: `ScosCacheConfiguration`: fallback `NoOpCacheManager` só no startup, `ping()` sem fechar a conexão, mensagem de log diz "Redis Sentinel" mesmo em Standalone/Cluster, e `createJacksonSerializer()` não aceita tipos extras da allowlist.
+  evidence: Leitura do código; documentado. Fora de escopo: muda comportamento.
+
+## Deferido da Story 4-10 (documentar `jpa`)
+
+- `SpecificationRepository`: `specificationEqual` com função e `value == null` lança NPE; caminho vazio lança `IndexOutOfBoundsException`; igualdade com `null` gera `= NULL` -- validar/tratar (mudança de comportamento).
+- `BaseEntity`: `userAt` não é preenchido pelo `AuditingEntityListener` (sem `@CreatedBy`/`@LastModifiedBy`); import `LocalDateTime` não usado.
+- `JacksonCustomJsonFormatMapper()` usa `ObjectMapper` padrão, sem a configuração do Spring.
+- `BaseLiquibaseProperties`: muitas propriedades sem efeito, `validate()` não é automático, `isDevelopmentMode` lê propriedade de sistema por substring.
+
+## Deferido da Story 4-11 (documentar `web`)
+
+- `IpAddressExtractor`: confia em cabeçalhos de proxy sem verificar origem (forjáveis); `InetAddress.getByName` pode resolver DNS com valor do cabeçalho; `split(":")` quebra IPv6 (`::1` passa como público, prefixos IPv6 da lista privada nunca casam).
+- `MultiReadHttpServletRequest`: corpo inteiro em memória sem limite; `getParameterMap()` no `createURI` do filtro pode consumir corpo de formulário antes do cache.
+- Filtros/`ScosFilterProperties`/`IpAddressExtractor`/`ScosJacksonConfig`/`ValidationAnnotationCountListener` não estão em `AutoConfiguration.imports` (dependem de component scan da aplicação).
+- `@ScosRequest*`: defaults `nameCache="DISABLE"`/`condition="false"` deixam cache desligado; `ScosFieldError.of` duplica `ScosProblemDetails.typeFromCode`; `ScosPaginationFilterDTO.page()` devolve `null` enquanto `getPage()` aplica o padrão.
+
+## Story 4.12 (documentar `feign`)
+
+- `JacksonDecoderCustom`: variável do catch chamada `var5` (artefato de decompilação); renomear numa story de código. `defer`.
+
+## Story 4.13 (documentar `jdempotent`)
+
+- `RedisIdempotentRepository` (Javadoc/comentários em inglês) e `ScosJdempotentRedisConfiguration`: o Javadoc diz que o limiar de chamada lenta vem de `spring.data.redis.timeout`, mas a fábrica Lettuce do módulo fixa o timeout de comando em 5 s e nunca lê essa propriedade; o limiar do breaker é sempre igual ao timeout (a ordem "slow < timeout" do README antigo não era alcançável). O README foi corrigido; tornar o timeout configurável é story de código. `defer`.
+- `IdempotentAspect.fillChains()`: devolve `jdempotentIgnoreAnnotationChain` como cabeça, deixando `JdempotentNoAnnotationChain` fora da cadeia (resultado equivalente ao do `Default`); elo morto. `defer`.
+- `IdempotentAspect.execute`: `catch (Exception)` não libera a chave diante de `Error` (expira só pelo TTL); documentado, mas pode ser tratado em story de código. `defer`.
+- Os `ITTest` (Testcontainers) de `jdempotent` não foram executados nesta story (só testes unitários); rodar `mvn verify -pl jdempotent` no fechamento do Epic. `defer`.
+
+## Story 4.14 (documentar `audit`)
+
+- `ScosAuditReadAspect` (citado no CHANGELOG, README e Javadoc) não existe no código: `@Auditable(action = AuditAction.READ)` em método não é processado; só `recordRead` e `auditRead=true` registram leituras. Implementar o aspecto (ou remover a promessa) é story de código. `defer`.
+- `ScosHibernateAuditListener` não é registrado por nenhuma autoconfiguração (só em `ScosLiquibaseTestConfiguration`); a aplicação precisa registrá-lo. Considerar autoconfiguração. `defer`.
+- `ScosAuditDlqJob.reprocessEntry`: chamada interna sem proxy (`@Transactional` ineficaz) e sem limite de `retryCount` (entradas que sempre falham ficam na primeira página e podem travar as demais). `defer`.
+- `ScosAuditBatchConsumer.EVENT_ORDER_SEQ` reinicia a cada JVM (`verifyChain` ordena por `eventOrder`); `ScosAuditRetentionJob.buildTombstone` calcula o hash com `LocalDateTime.now()` diferente do persistido e carrega tudo em memória (`Pageable.unpaged()`). Impacto na `verifyChain` não verificado. `defer`.
+- `ScosAuditQueue.offer`: checagem de capacidade e inserção não atômicas (pode exceder levemente). `ScosAuditHikariConfigProperties`: `autoCommit`, `connectionTestQuery`, `healthCheckInterval` sem efeito; `ScosAuditLogProperties.enable`/`enableLiquibase` via `@Value` duplicam o `@ConditionalOnProperty`. `defer`.
+- Checkstyle `analyze` do `audit` ainda acusa ~780 avisos não-Javadoc (indentação, imports, linha longa). Fora do escopo de documentação. `defer`.
+- `mvn -pl audit -am verify` falhou em módulo a montante (não investigado); `mvn -pl audit verify` passou (56 testes, ITs incluídos). `defer`.
+
+## Story 4.15 (documentar `privacy`)
+
+- A story assumia `privacy/pom.xml` sem perfil `analyze`: o perfil vive no `pom.xml` raiz e é herdado por todos os módulos; nada a ligar. Registrado como divergência.
+- Checkstyle `analyze` do `privacy` ainda acusa ~1430 avisos não-Javadoc (Indentation Google 2 espaços ~1230, LineLength 150, imports 30, LeftCurly/NeedBraces). Fora do escopo; `failOnViolation` é da Story 4.16. `defer`.
+- `JasyptCryptoKeyProvider` não usa Jasypt (só deriva chaves via JDK); o nome induz a erro. Renomear/documentar é story de código. `defer`.
+
+## Story 4.16 (ativar o gate de Checkstyle)
+
+- Gate ativado só para Javadoc ausente (`MissingJavadocMethod`/`MissingJavadocType` com `severity=error`). Os demais avisos do Checkstyle (indentação Google, `LineLength`, imports, `LeftCurly`/`NeedBraces`, `SummaryJavadoc` etc.; milhares nos módulos, ex.: `privacy` ~1430, `audit` ~780, `core` 345) continuam `warning` e não bloqueiam. Elevá-los exige formatação em massa. `defer`.
+- `configLocation` (`${maven.multiModuleProjectDirectory}`) continua frágil para build de módulo único (achado 3 da 4.1); o gate só é confiável rodando da raiz do reactor. `defer`.
+- `MissingJavadocMethod` com `minLineCount=2` deixa passar métodos/atributos de 1-2 linhas sem Javadoc; o gate não os pega. `defer`.

@@ -1,6 +1,6 @@
 # Story 4.7: Documentar o módulo `spring`
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -16,15 +16,15 @@ Para entender como `ScosRule` se integra à minha aplicação.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Confirmar pré-requisito (AC: #1)
-  - [ ] **Confirmado por leitura direta**: `spring` **ainda não existe** — nasce na Story 1.8, recebendo `ScosRule`, `ScosRuleService`, `NormalizeStrings`, `StringProcessingAspect`, `ScosOnStartupListener`, `ScosStartupListener` (hoje em `utils/src/main/java/.../annotation/rules/`, `.../aspect/`, `.../listener/`, confirmado via `find`)
-- [ ] Task 2: Javadoc em toda API pública (AC: #1)
-  - [ ] Cobrir as 6 classes/interfaces migradas, incluindo o contrato `ScosStartupListener` (interface que `ScosOnStartupListener` consome via `List<ScosStartupListener>` — documentar essa relação de consumo no Javadoc da interface)
-- [ ] Task 3: Comentários inline onde a lógica não é óbvia (AC: #1)
-  - [ ] `StringProcessingAspect`/`NormalizeStrings`: comentar a decisão de onde/quando a normalização de string é aplicada, se não for óbvio pela assinatura
-- [ ] Task 4: README com diagrama Mermaid (AC: #1)
-  - [ ] Criar `spring/README.md` explicando o propósito (aspectos genéricos do Spring, sem JPA/Servlet — dependência só de `core`)
-  - [ ] Diagrama Mermaid do fluxo: aplicação consumidora implementa `ScosStartupListener` → `ScosOnStartupListener` (bean do Spring) coleta todos via `List<ScosStartupListener>` e dispara no evento de startup
+- [x] Task 1: Confirmar pré-requisito (AC: #1)
+  - [x] **Confirmado por leitura direta**: `spring` **ainda não existe** — nasce na Story 1.8, recebendo `ScosRule`, `ScosRuleService`, `NormalizeStrings`, `StringProcessingAspect`, `ScosOnStartupListener`, `ScosStartupListener` (hoje em `utils/src/main/java/.../annotation/rules/`, `.../aspect/`, `.../listener/`, confirmado via `find`)
+- [x] Task 2: Javadoc em toda API pública (AC: #1)
+  - [x] Cobrir as 6 classes/interfaces migradas, incluindo o contrato `ScosStartupListener` (interface que `ScosOnStartupListener` consome via `List<ScosStartupListener>` — documentar essa relação de consumo no Javadoc da interface)
+- [x] Task 3: Comentários inline onde a lógica não é óbvia (AC: #1)
+  - [x] `StringProcessingAspect`/`NormalizeStrings`: comentar a decisão de onde/quando a normalização de string é aplicada, se não for óbvio pela assinatura
+- [x] Task 4: README com diagrama Mermaid (AC: #1)
+  - [x] Criar `spring/README.md` explicando o propósito (aspectos genéricos do Spring, sem JPA/Servlet — dependência só de `core`)
+  - [x] Diagrama Mermaid do fluxo: aplicação consumidora implementa `ScosStartupListener` → `ScosOnStartupListener` (bean do Spring) coleta todos via `List<ScosStartupListener>` e dispara no evento de startup
 
 ## Dev Notes
 
@@ -45,10 +45,17 @@ Para entender como `ScosRule` se integra à minha aplicação.
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-5-5
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Javadoc nas 7 classes públicas (as 6 do escopo + `StringTransformRule`); inline na `StringProcessingAspect`; `spring/README.md` com Mermaid.
+- Achados documentados: `CAMEL_CASE` equivale a `LOWER_CASE`; aspecto só altera campos `String` declarados direto na classe; módulo sem auto-configuration (exige component scan). Possíveis follow-ups, sem alteração de código nesta story.
+- `mvn -pl spring -am test` verde. Sem commit.
+
 ### File List
+
+- spring/README.md (novo)
+- spring/src/main/java/.../{annotation/normalizestrings/NormalizeStrings,annotation/rules/ScosRule,annotation/rules/ScosRuleService,aspect/StringProcessingAspect,enums/StringTransformRule,listener/ScosOnStartupListener,specification/ScosStartupListener}.java

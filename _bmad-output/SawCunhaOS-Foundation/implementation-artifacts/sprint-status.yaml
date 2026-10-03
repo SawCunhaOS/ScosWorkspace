@@ -97,22 +97,22 @@ development_status:
   epic-3-retrospective: optional
 
   epic-4: in-progress
-  4-1-diagnosticar-o-gate-mecânico-de-javadoc-via-checkstyle: review
-  4-2-documentar-o-módulo-core: review
-  4-3-documentar-o-módulo-audit-api: review
-  4-4-documentar-o-módulo-jdempotent-api: review
-  4-5-documentar-o-módulo-validation-api: review
-  4-6-documentar-o-módulo-archtest: review
-  4-7-documentar-o-módulo-spring: ready-for-dev
-  4-8-documentar-o-módulo-validation: ready-for-dev
-  4-9-documentar-o-módulo-cache: ready-for-dev
-  4-10-documentar-o-módulo-jpa: ready-for-dev
-  4-11-documentar-o-módulo-web: ready-for-dev
-  4-12-documentar-o-módulo-feign: ready-for-dev
-  4-13-documentar-o-módulo-jdempotent: ready-for-dev
-  4-14-documentar-o-módulo-audit: ready-for-dev
-  4-15-documentar-o-módulo-privacy: ready-for-dev
-  4-16-ativar-globalmente-o-gate-mecânico-de-checkstyle: ready-for-dev
+  4-1-diagnosticar-o-gate-mecânico-de-javadoc-via-checkstyle: done
+  4-2-documentar-o-módulo-core: done
+  4-3-documentar-o-módulo-audit-api: done
+  4-4-documentar-o-módulo-jdempotent-api: done
+  4-5-documentar-o-módulo-validation-api: done
+  4-6-documentar-o-módulo-archtest: done
+  4-7-documentar-o-módulo-spring: done
+  4-8-documentar-o-módulo-validation: done
+  4-9-documentar-o-módulo-cache: done
+  4-10-documentar-o-módulo-jpa: done
+  4-11-documentar-o-módulo-web: done
+  4-12-documentar-o-módulo-feign: done
+  4-13-documentar-o-módulo-jdempotent: done
+  4-14-documentar-o-módulo-audit: done
+  4-15-documentar-o-módulo-privacy: done
+  4-16-ativar-globalmente-o-gate-mecânico-de-checkstyle: done
   epic-4-retrospective: optional
 action_items:
   - id: "epic-2-retro-item-1-corrigir-handleexceptioninternal-para-us"

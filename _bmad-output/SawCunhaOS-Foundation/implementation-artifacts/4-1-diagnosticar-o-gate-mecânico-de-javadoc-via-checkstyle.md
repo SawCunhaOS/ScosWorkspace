@@ -1,6 +1,6 @@
 # Story 4.1: Diagnosticar o gate mecânico de Javadoc via Checkstyle
 
-Status: review
+Status: done
 
 <!-- baseline_commit: 1986d6110d5c0495ec1a995176ede9dfe3414f47 -->
 

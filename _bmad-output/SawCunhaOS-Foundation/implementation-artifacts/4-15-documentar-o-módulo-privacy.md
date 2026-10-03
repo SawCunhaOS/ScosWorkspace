@@ -1,6 +1,6 @@
 # Story 4.15: Documentar o módulo `privacy`
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -50,10 +50,18 @@ Para ter o mesmo piso de qualidade dos demais módulos.
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Sonnet 5.5
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Divergência: o perfil `analyze` já vem do `pom.xml` raiz (herdado); `privacy/pom.xml` não foi alterado.
+- README: Gson -> Jackson, dependentes reais (`web`, `audit`, `jdempotent`, `archtest`; não `utils`) e diagrama Mermaid.
+- Javadoc: 24 `SummaryJavadoc` corrigidos em 10 arquivos; testes 50/0 falhas; `-Panalyze verify` OK.
+- Spec: `spec-4-15-documentar-o-módulo-privacy.md`.
+
 ### File List
+
+- `SawCunhaOS-Foundation/privacy/README.md`
+- `SawCunhaOS-Foundation/privacy/src/main/java/**` (10 arquivos, só Javadoc)

@@ -1,6 +1,6 @@
 # Story 4.16: Ativar globalmente o gate mecânico de Checkstyle
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -53,10 +53,21 @@ Para que o piso de documentação seja garantido mecanicamente, não só por che
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-5-5
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Diagnóstico da 4.1 consumido: duas causas (goal não amarrado + severidade `warning`). Corrigidas ambas no `pom.xml` (perfil `analyze`, execution `checkstyle-javadoc-gate` na fase `verify`, `failOnViolation=true`, `violationSeverity=error`). Divergência: o perfil é `<profile>` herdado, não `pluginManagement`.
+- Para não exigir milhares de correções de estilo, só `MissingJavadocMethod`/`MissingJavadocType` viraram `severity=error` no `checkstyle.xml`; o resto segue `warning` (registrado em deferred-work.md).
+- O gate provou-se ao falhar em `web` com 21 `MissingJavadocMethod` (atributos das meta-anotações `ScosRequest*`, lacuna residual da 4.11); documentados com Javadoc de uma linha.
+- Verificação: `mvn -o -Panalyze -DskipTests verify` BUILD SUCCESS, `checkstyle:check` rodou nos 16 módulos; `mvn -o clean install` (com testes) BUILD SUCCESS (todos os testes, ITs incluídos).
+- Revisão adversarial inline (sem subagentes): CRLF dos arquivos preservado; CI (`checkstyle:check` direto) herda `failOnViolation` e passa a barrar Javadoc ausente; limitação `minLineCount=2` e `configLocation` frágil registradas como defer.
+
 ### File List
+
+- `SawCunhaOS-Foundation/pom.xml`
+- `SawCunhaOS-Foundation/etc/devops/checkstyle/checkstyle.xml`
+- `SawCunhaOS-Foundation/web/src/main/java/br/com/sawcunhaos/foundation/web/annotation/ScosRequest{GET,POST,PUT,PATCH,DELETE}.java`
+- `_bmad-output/SawCunhaOS-Foundation/implementation-artifacts/{spec-4-16-*.md,deferred-work.md,sprint-status.yaml}`

@@ -1,6 +1,6 @@
 # Story 4.8: Documentar o módulo `validation`
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -16,15 +16,15 @@ Para entender o contrato de `Cpf`/`Cnpj`/`Email`/`TaxIdentifier`.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Confirmar pré-requisito (AC: #1)
-  - [ ] **Confirmado por leitura direta**: `validation` **ainda não existe** — nasce na Story 1.9, recebendo `Cpf`, `Cnpj`, `Email`, `TaxIdentifier` (hoje em `utils/src/main/java/.../valueobjects/`, confirmado via `find`) e dependendo de `core` + `validation-api`, com `jakarta.persistence-api` como `provided`
-- [ ] Task 2: Javadoc em toda API pública (AC: #1)
-  - [ ] Cobrir os 4 value objects: contrato de construção/validação, formato esperado de entrada, o que cada um valida (dígito verificador de CPF/CNPJ, formato de e-mail)
-- [ ] Task 3: Comentários inline onde a lógica não é óbvia (AC: #1)
-  - [ ] Comentar algoritmo de validação de dígito verificador de CPF/CNPJ se a lógica não for autoexplicativa pelo nome dos métodos
-- [ ] Task 4: README com diagrama Mermaid (AC: #1)
-  - [ ] Criar `validation/README.md` explicando a relação com `validation-api` (as anotações `@Cpf`/`@Cnpj` ficam em `validation-api`; os value objects que implementam a validação ficam aqui) e com `jakarta.persistence-api` como `provided` (não força JPA completo em quem só quer validar um documento)
-  - [ ] Diagrama Mermaid: aplicação usa `Cpf.of(valor)` (ou equivalente) → validação de dígito verificador → objeto imutável válido ou exceção
+- [x] Task 1: Confirmar pré-requisito (AC: #1)
+  - [x] **Confirmado por leitura direta**: `validation` **ainda não existe** — nasce na Story 1.9, recebendo `Cpf`, `Cnpj`, `Email`, `TaxIdentifier` (hoje em `utils/src/main/java/.../valueobjects/`, confirmado via `find`) e dependendo de `core` + `validation-api`, com `jakarta.persistence-api` como `provided`
+- [x] Task 2: Javadoc em toda API pública (AC: #1)
+  - [x] Cobrir os 4 value objects: contrato de construção/validação, formato esperado de entrada, o que cada um valida (dígito verificador de CPF/CNPJ, formato de e-mail)
+- [x] Task 3: Comentários inline onde a lógica não é óbvia (AC: #1)
+  - [x] Comentar algoritmo de validação de dígito verificador de CPF/CNPJ se a lógica não for autoexplicativa pelo nome dos métodos
+- [x] Task 4: README com diagrama Mermaid (AC: #1)
+  - [x] Criar `validation/README.md` explicando a relação com `validation-api` (as anotações `@Cpf`/`@Cnpj` ficam em `validation-api`; os value objects que implementam a validação ficam aqui) e com `jakarta.persistence-api` como `provided` (não força JPA completo em quem só quer validar um documento)
+  - [x] Diagrama Mermaid: aplicação usa `Cpf.of(valor)` (ou equivalente) → validação de dígito verificador → objeto imutável válido ou exceção
 
 ## Dev Notes
 
@@ -46,10 +46,19 @@ Para entender o contrato de `Cpf`/`Cnpj`/`Email`/`TaxIdentifier`.
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Sonnet 5.5
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Pré-requisito: o módulo `validation` já existe (Story 1.9, `done`) com os 4 value objects e os 4 `ConstraintValidator`s; a nota "ainda não existe" da story estava desatualizada.
+- Javadoc de tipo + construtor + setter + construtor JPA nos 4 value objects e `isValid` nos 4 validadores; comentários inline nas decisões não óbvias (ordem CNPJ→CPF, `type` só em sucesso, regex de e-mail + checagens explícitas, `$` do Java no CEP).
+- Contrato real documentado (difere do texto da story): value objects **não** são imutáveis (há setter), só aceitam dígitos sem pontuação e `null` quebra `@NonNull` com exceção que não é `ScosException`.
+- `validation/README.md` criado (relação com `validation-api`, `jakarta.persistence-api` `provided`, diagrama Mermaid, tabela de códigos `SCOS-006..009`).
+- `mvn -pl validation -am test` verde; checkstyle do perfil `analyze` sem violações de Javadoc. Spec: `spec-4-8-documentar-o-módulo-validation.md`.
+
 ### File List
+- `SawCunhaOS-Foundation/validation/README.md` (novo)
+- `SawCunhaOS-Foundation/validation/src/main/java/.../valueobjects/{Cpf,Cnpj,Email,TaxIdentifier}.java` (Javadoc/comentários)
+- `SawCunhaOS-Foundation/validation/src/main/java/.../taxidentifier/constraint/{CpfValidator,CnpjValidator,TaxIdentifierValidator}.java` e `.../zipcode/constraint/ZipCodeValidator.java` (Javadoc/comentários)
